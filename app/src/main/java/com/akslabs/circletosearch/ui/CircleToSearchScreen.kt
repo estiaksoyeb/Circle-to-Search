@@ -35,6 +35,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.akslabs.circletosearch.data.SearchEngine
+import com.akslabs.circletosearch.data.isDirectUpload
 import com.akslabs.circletosearch.data.TextNode
 import com.akslabs.circletosearch.data.TextRepository
 import com.akslabs.circletosearch.ui.components.FriendlyMessageBubble
@@ -262,7 +264,7 @@ fun CircleToSearchScreen(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
-                    Box(modifier = Modifier.fillMaxSize().background(brush = Brush.verticalGradient(colors = OverlayGradientColors.map { it.copy(alpha = 0.3f) }})))
+                    Box(modifier = Modifier.fillMaxSize().background(brush = Brush.verticalGradient(colors = OverlayGradientColors.map { it.copy(alpha = 0.3f) })))
                 }
             }
 
@@ -289,8 +291,6 @@ fun CircleToSearchScreen(
                 desktopModeEngines = desktopModeEngines,
                 isDarkMode = isDarkMode,
                 showGradientBorder = showGradientBorder,
-                searchUrl = searchUrl,
-                currentUrl = webViews[selectedEngine]?.url,
                 onClose = onClose,
                 onToggleDesktopMode = {
                     val newSet = desktopModeEngines.toMutableSet()
@@ -313,8 +313,7 @@ fun CircleToSearchScreen(
                         }
                     }
                 },
-                onOpenSettings = { showSettingsScreen = true },
-                context = context
+                onOpenSettings = { showSettingsScreen = true }
             )
 
             Box(modifier = Modifier.align(Alignment.BottomCenter)) {
@@ -364,7 +363,7 @@ fun CircleToSearchScreen(
                     }
                     searchEngines.forEach { engine ->
                         if (!preloadedUrls.containsKey(engine)) {
-                            val url = if (com.akslabs.circletosearch.data.isDirectUpload(engine)) {
+                            val url = if (engine.isDirectUpload) {
                                  when (engine) {
                                     SearchEngine.Perplexity -> ImageSearchUploader.getPerplexityUrl(hostedImageUrl!!)
                                     SearchEngine.ChatGPT -> ImageSearchUploader.getChatGPTUrl(hostedImageUrl!!)
