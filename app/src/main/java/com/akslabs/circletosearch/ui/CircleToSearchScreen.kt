@@ -408,9 +408,15 @@ fun CircleToSearchScreen(
     androidx.compose.material3.BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetPeekHeight = (androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp * 0.55f), // Dynamic 55% peek
-        sheetContainerColor = Color.Transparent,
+        sheetContainerColor = Color(0xFF1F1F1F),
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
-        sheetDragHandle = { BottomSheetDefaults.DragHandle() },
+        sheetDragHandle = { 
+            BottomSheetDefaults.DragHandle(
+                color = Color.White.copy(alpha = 0.3f),
+                width = 32.dp,
+                height = 3.dp
+            )
+        },
         sheetSwipeEnabled = true,
         sheetContent = {
             // Bottom Sheet Content (Results)
