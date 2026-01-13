@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ /*
+  ~  * Copyright (C) 2025 AKS-Labs (original author)
+  ~  *
+  ~  * This program is free software: you can redistribute it and/or modify
+  ~  * it under the terms of the GNU General Public License as published by
+  ~  * the Free Software Foundation, either version 3 of the License, or
+  ~  * (at your option) any later version.
+  ~  *
+  ~  * This program is distributed in the hope that it will be useful,
+  ~  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  * GNU General Public License for more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License
+  ~  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  ~  */
+  -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CircleToSearch"
+        android:enableOnBackInvokedCallback="true"
+        tools:targetApi="31">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.CircleToSearch">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".CircleToSearchAccessibilityService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <service
+            android:name=".CircleToSearchVoiceService"
+            android:exported="true"
+            android:permission="android.permission.BIND_VOICE_INTERACTION">
+            <intent-filter>
+                <action android:name="android.service.voice.VoiceInteractionService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.voice_interaction"
+                android:resource="@xml/assist_service_config" />
+        </service>
+
+        <service
+            android:name=".AssistSessionService"
+            android:permission="android.permission.BIND_VOICE_INTERACTION"
+            android:exported="true" />
+
+        <service
+            android:name=".CircleToSearchRecognitionService"
+            android:label="@string/app_name"
+            android:exported="true"
+            android:permission="android.permission.BIND_VOICE_INTERACTION">
+            <intent-filter>
+                <action android:name="android.speech.RecognitionService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".OverlayActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CircleToSearch.Transparent"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance" />
+
+        <activity
+            android:name=".TileTriggerActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:launchMode="singleInstance" />
+
+        <service
+            android:name=".CircleToSearchTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_qs_circle_to_search"
+            android:label="Circle to Search"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.akslabs.circletosearch.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- WebViewActivity removed - not implemented -->
+
+    </application>
+
+</manifest>

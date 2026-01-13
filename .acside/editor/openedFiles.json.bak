@@ -1,0 +1,20 @@
+{
+  "allFiles": [
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/CircleToSearch-main/app/src/main/java/com/akslabs/circletosearch/ui/CircleToSearchScreen.kt",
+      "selection": {
+        "end": {
+          "column": 53,
+          "index": 8760,
+          "line": 198
+        },
+        "start": {
+          "column": 50,
+          "index": 8757,
+          "line": 198
+        }
+      }
+    }
+  ],
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/CircleToSearch-main/app/src/main/java/com/akslabs/circletosearch/ui/CircleToSearchScreen.kt"
+}
