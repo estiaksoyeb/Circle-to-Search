@@ -289,6 +289,8 @@ fun CircleToSearchScreen(
                 desktopModeEngines = desktopModeEngines,
                 isDarkMode = isDarkMode,
                 showGradientBorder = showGradientBorder,
+                searchUrl = searchUrl,
+                currentUrl = webViews[selectedEngine]?.url,
                 onClose = onClose,
                 onToggleDesktopMode = {
                     val newSet = desktopModeEngines.toMutableSet()
@@ -311,7 +313,8 @@ fun CircleToSearchScreen(
                         }
                     }
                 },
-                onOpenSettings = { showSettingsScreen = true }
+                onOpenSettings = { showSettingsScreen = true },
+                context = context
             )
 
             Box(modifier = Modifier.align(Alignment.BottomCenter)) {
