@@ -138,7 +138,8 @@ fun SetupScreen(onSettingsClick: () -> Unit) {
                     text = "Circle to Search",
                     style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center).padding(horizontal = 48.dp),
+                    textAlign = TextAlign.Center
                 )
                 IconButton(
                     onClick = onSettingsClick,
