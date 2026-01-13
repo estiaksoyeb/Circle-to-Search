@@ -2,11 +2,22 @@ package com.akslabs.circletosearch.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.BorderOuter
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DesktopWindows
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,7 +53,7 @@ fun TopControlBar(
         IconButton(
             onClick = onClose,
             modifier = Modifier
-                .background(Color.Gray.copy(alpha = 0.5f), androidx.compose.foundation.shape.CircleShape)
+                .background(Color.Gray.copy(alpha = 0.5f), CircleShape)
                 .size(40.dp)
         ) {
             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
@@ -59,11 +70,11 @@ fun TopControlBar(
         
         Box(
             modifier = Modifier
-                .background(Color.Gray.copy(alpha = 0.5f), androidx.compose.foundation.shape.CircleShape)
+                .background(Color.Gray.copy(alpha = 0.5f), CircleShape)
                 .size(40.dp),
             contentAlignment = Alignment.Center
         ) {
-            var showMenu by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+            var showMenu by remember { mutableStateOf(false) }
             IconButton(onClick = { showMenu = true }) {
                 Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
             }

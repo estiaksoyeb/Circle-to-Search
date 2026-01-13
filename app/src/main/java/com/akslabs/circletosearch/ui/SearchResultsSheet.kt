@@ -3,8 +3,6 @@ package com.akslabs.circletosearch.ui
 import android.content.Context
 import android.view.ViewGroup
 import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.webkit.WebSettings
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
@@ -18,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
@@ -104,7 +101,6 @@ fun SearchResultsSheet(
 
         Box(modifier = Modifier.fillMaxSize()) {
             if (isLoading || (preloadedUrls.containsKey(selectedEngine) && !webViews.containsKey(selectedEngine))) {
-                // Loader logic handled in parent or here
                  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     ContainedLoadingIndicatorSample()
                  }
@@ -115,7 +111,7 @@ fun SearchResultsSheet(
                      val url = preloadedUrls[engine]!!
                      val isSelected = (engine == selectedEngine)
                      
-                     androidx.compose.runtime.key(engine) {
+                     key(engine) {
                         AndroidView(
                             factory = { ctx ->
                                 if (webViews.containsKey(engine)) {
@@ -141,12 +137,6 @@ fun SearchResultsSheet(
                                         )
                                     }
                                     val webView = createWebView(ctx, engine)
-                                    // webViews map is updated in parent via side effect or passing mutable map? 
-                                    // ideally createWebView should return and parent manages map.
-                                    // But here we need to put it in the map provided.
-                                    // Let's assume createWebView handles configuration.
-                                    // Actually, we should probably let parent handle map updates.
-                                    // For now, mirroring previous logic.
                                     webView.loadUrl(url)
                                     swipeRefresh.addView(webView)
                                     swipeRefresh.setOnRefreshListener {
@@ -169,8 +159,6 @@ fun SearchResultsSheet(
                                     if (webView.url != url && url != webView.originalUrl) {
                                         webView.loadUrl(url)
                                     }
-                                    // Inject dark mode if needed
-                                    // Handled by WebViewClient in createWebView usually
                                 }
                             },
                             modifier = Modifier

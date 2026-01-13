@@ -20,11 +20,7 @@
 package com.akslabs.circletosearch.ui
 
 import android.graphics.Bitmap
-import android.graphics.Rect
-import android.view.ViewGroup
-import android.webkit.WebSettings
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
@@ -34,13 +30,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.TextFormat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
@@ -49,7 +44,6 @@ import androidx.compose.ui.zIndex
 import com.akslabs.circletosearch.data.SearchEngine
 import com.akslabs.circletosearch.data.TextNode
 import com.akslabs.circletosearch.data.TextRepository
-import com.akslabs.circletosearch.data.isDirectUpload
 import com.akslabs.circletosearch.ui.components.FriendlyMessageBubble
 import com.akslabs.circletosearch.ui.components.searchWithGoogleLens
 import com.akslabs.circletosearch.ui.theme.OverlayGradientColors
@@ -228,9 +222,9 @@ fun CircleToSearchScreen(
                 allowContentAccess = true
                 allowFileAccessFromFileURLs = true
                 allowUniversalAccessFromFileURLs = true
-                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                setRenderPriority(WebSettings.RenderPriority.HIGH)
-                cacheMode = WebSettings.LOAD_DEFAULT
+                mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                setRenderPriority(android.webkit.WebSettings.RenderPriority.HIGH)
+                cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
                 setSupportZoom(true)
                 builtInZoomControls = true
                 displayZoomControls = false
@@ -353,17 +347,17 @@ fun CircleToSearchScreen(
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Image(
-                        bitmap = screenshot.asImageBitmap(),
+                    androidx.compose.foundation.Image(
+                        bitmap = androidx.compose.ui.graphics.asImageBitmap(screenshot),
                         contentDescription = "Screenshot",
-                        contentScale = ContentScale.Crop,
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
-                                brush = Brush.verticalGradient(
+                                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                                     colors = OverlayGradientColors.map { it.copy(alpha = 0.3f) }
                                 )
                             )
@@ -378,7 +372,7 @@ fun CircleToSearchScreen(
                         .fillMaxSize()
                         .border(
                             width = 8.dp,
-                            brush = Brush.verticalGradient(colors = OverlayGradientColors),
+                            brush = androidx.compose.ui.graphics.Brush.verticalGradient(colors = OverlayGradientColors),
                             shape = RoundedCornerShape(24.dp)
                         )
                         .clip(RoundedCornerShape(24.dp))
@@ -421,7 +415,6 @@ fun CircleToSearchScreen(
                 onRefresh = { webViews[selectedEngine]?.reload() },
                 onCopyUrl = {
                     if (searchUrl != null) {
-                        val clip = android.content.ClipData.newPlainText("Search URL", searchUrl)
                         clipboardManager.setText(AnnotatedString(searchUrl!!))
                     }
                 },
@@ -486,7 +479,7 @@ fun CircleToSearchScreen(
                     
                     if (uiPreferences.isUseGoogleLensOnly()) {
                         val path = ImageUtils.saveBitmap(context, selectedBitmap!!)
-                        val uri = android.net.Uri.fromFile(File(path))
+                        val uri = android.net.Uri.fromFile(java.io.File(path))
                         val success = searchWithGoogleLens(uri, context)
                         if (success) {
                             onClose()
@@ -580,25 +573,5 @@ fun CircleToSearchScreen(
                 )
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@androidx.compose.ui.tooling.preview.Preview
-@Composable
-fun ContainedLoadingIndicatorSample() {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        androidx.compose.material3.ContainedLoadingIndicator()
-    }
-}
-
-fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.ImageVector {
-    return when (engine) {
-        SearchEngine.Google -> Icons.Default.Search
-        SearchEngine.Bing -> Icons.Default.TravelExplore
-        SearchEngine.Yandex -> Icons.Default.Language
-        SearchEngine.TinEye -> Icons.Default.Visibility
-        SearchEngine.Perplexity -> Icons.Default.Psychology
-        SearchEngine.ChatGPT -> Icons.Default.Chat
     }
 }
