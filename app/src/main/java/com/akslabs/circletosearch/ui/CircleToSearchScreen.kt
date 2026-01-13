@@ -82,6 +82,9 @@ import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
 
+import com.akslabs.circletosearch.data.TextRepository
+import com.akslabs.circletosearch.data.TextNode
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CircleToSearchScreen(
@@ -93,8 +96,20 @@ fun CircleToSearchScreen(
     
     // Initialize preferences
     val uiPreferences = remember { UIPreferences(context) }
+
+    // Text Selection State
+    var isTextSelectionMode by remember { mutableStateOf(false) }
+    val textNodes = remember { mutableStateListOf<TextNode>() }
+    val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
+
+    // Load text nodes once on start
+    LaunchedEffect(Unit) {
+        val nodes = TextRepository.getTextNodes()
+        textNodes.addAll(nodes)
+        android.util.Log.d("CircleToSearch", "UI loaded ${nodes.size} text nodes")
+    }
     
-    // Search Engines Order Logic
+    // ... (rest of state initialization)
     val preferredOrder = remember(uiPreferences.getSearchEngineOrder()) {
         val allEngines = SearchEngine.values()
         val orderString = uiPreferences.getSearchEngineOrder()
@@ -615,50 +630,83 @@ fun CircleToSearchScreen(
                 )
             }
 
+            // 3. Drawing Canvas (Interactive Layer)
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragStart = { offset ->
-                                currentPathPoints.clear()
-                                currentPathPoints.add(offset)
-                                selectionRect = null
-                                scope.launch { selectionAnim.snapTo(0f) }
-                            },
-                            onDrag = { change, _ ->
-                                val offset = change.position
-                                currentPathPoints.add(offset)
-                            },
-                            onDragEnd = {
-                                if (currentPathPoints.isNotEmpty()) {
-                                    var minX = Float.MAX_VALUE
-                                    var minY = Float.MAX_VALUE
-                                    var maxX = Float.MIN_VALUE
-                                    var maxY = Float.MIN_VALUE
-
-                                    currentPathPoints.forEach { p ->
-                                        minX = min(minX, p.x)
-                                        minY = min(minY, p.y)
-                                        maxX = max(maxX, p.x)
-                                        maxY = max(maxY, p.y)
-                                    }
-                                    
-                                    val rect = Rect(minX.toInt(), minY.toInt(), maxX.toInt(), maxY.toInt())
-                                    selectionRect = rect
-                                    currentPathPoints.clear() 
-                                    
-                                    scope.launch {
-                                        selectionAnim.animateTo(1f, animationSpec = tween(600))
-                                        selectedBitmap = ImageUtils.cropBitmap(screenshot!!, rect)
-                                        isSearching = true
-                                    }
+                    .pointerInput(isTextSelectionMode) {
+                        if (isTextSelectionMode) {
+                            detectTapGestures { offset ->
+                                // Check if tap hits any text node
+                                val tappedNode = textNodes.find { node ->
+                                    node.bounds.contains(offset.x.toInt(), offset.y.toInt())
+                                }
+                                
+                                if (tappedNode != null) {
+                                    clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(tappedNode.text))
+                                    Toast.makeText(context, "Copied: ${tappedNode.text}", Toast.LENGTH_SHORT).show()
                                 }
                             }
-                        )
+                        } else {
+                            detectDragGestures(
+                                onDragStart = { offset ->
+                                    currentPathPoints.clear()
+                                    currentPathPoints.add(offset)
+                                    selectionRect = null
+                                    scope.launch { selectionAnim.snapTo(0f) }
+                                },
+                                onDrag = { change, _ ->
+                                    val offset = change.position
+                                    currentPathPoints.add(offset)
+                                },
+                                onDragEnd = {
+                                    if (currentPathPoints.isNotEmpty()) {
+                                        var minX = Float.MAX_VALUE
+                                        var minY = Float.MAX_VALUE
+                                        var maxX = Float.MIN_VALUE
+                                        var maxY = Float.MIN_VALUE
+
+                                        currentPathPoints.forEach { p ->
+                                            minX = min(minX, p.x)
+                                            minY = min(minY, p.y)
+                                            maxX = max(maxX, p.x)
+                                            maxY = max(maxY, p.y)
+                                        }
+                                        
+                                        val rect = Rect(minX.toInt(), minY.toInt(), maxX.toInt(), maxY.toInt())
+                                        selectionRect = rect
+                                        currentPathPoints.clear() 
+                                        
+                                        scope.launch {
+                                            selectionAnim.animateTo(1f, animationSpec = tween(600))
+                                            selectedBitmap = ImageUtils.cropBitmap(screenshot!!, rect)
+                                            isSearching = true
+                                        }
+                                    }
+                                }
+                            )
+                        }
                     }
             ) {
-                if (currentPathPoints.size > 1) {
+                // Draw Text Selection Boxes
+                if (isTextSelectionMode) {
+                    textNodes.forEach { node ->
+                        drawRect(
+                            color = Color.White.copy(alpha = 0.3f),
+                            topLeft = Offset(node.bounds.left.toFloat(), node.bounds.top.toFloat()),
+                            size = Size(node.bounds.width().toFloat(), node.bounds.height().toFloat()),
+                            style = Fill
+                        )
+                        drawRect(
+                            color = Color.White,
+                            topLeft = Offset(node.bounds.left.toFloat(), node.bounds.top.toFloat()),
+                            size = Size(node.bounds.width().toFloat(), node.bounds.height().toFloat()),
+                            style = Stroke(width = 2f)
+                        )
+                    }
+                }
+
+                if (!isTextSelectionMode && currentPathPoints.size > 1) {
                     val path = Path().apply {
                         moveTo(currentPathPoints.first().x, currentPathPoints.first().y)
                         for (i in 1 until currentPathPoints.size) {
@@ -887,12 +935,17 @@ fun CircleToSearchScreen(
                 ) {
                     // Select Text Button
                     IconButton(onClick = { 
-                        Toast.makeText(context, "Select Text: Coming Soon", Toast.LENGTH_SHORT).show()
+                        isTextSelectionMode = !isTextSelectionMode
+                        if (isTextSelectionMode) {
+                            Toast.makeText(context, "Text Selection Mode On", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Text Selection Mode Off", Toast.LENGTH_SHORT).show()
+                        }
                     }) {
                         Icon(
                             imageVector = Icons.Default.TextFormat,
                             contentDescription = "Select Text",
-                            tint = Color.White
+                            tint = if (isTextSelectionMode) MaterialTheme.colorScheme.primary else Color.White
                         )
                     }
                     
