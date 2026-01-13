@@ -443,6 +443,15 @@ fun CircleToSearchScreen(
                         val scale by transition.animateFloat(label = "Scale") { if (it) 1.02f else 1f }
                         val alpha by transition.animateFloat(label = "Alpha") { if (it) 1f else 0.7f }
 
+import androidx.compose.material.icons.filled.TravelExplore
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Search
+
+// ... inside CircleToSearchScreen ...
+
                         Tab(
                             selected = selected,
                             onClick = { 
@@ -458,25 +467,49 @@ fun CircleToSearchScreen(
                                 this.alpha = alpha
                             },
                             text = {
-                                Text(
-                                    engine.name,
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal
-                                    ),
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
                                         .background(
                                             if (selected) Color.White.copy(alpha = 0.15f) else Color.Transparent,
                                             RoundedCornerShape(20.dp)
                                         )
-                                        .padding(horizontal = 14.dp, vertical = 6.dp),
-                                    color = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
-                                )
+                                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = getEngineIcon(engine),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        engine.name,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal
+                                        ),
+                                        color = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
+                                    )
+                                }
                             },
                             selectedContentColor = Color.Transparent,
                             unselectedContentColor = Color.Transparent
                         )
                     }
                 }
+
+// ... helper function at bottom of file ...
+
+fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.ImageVector {
+    return when (engine) {
+        SearchEngine.Google -> Icons.Default.Search
+        SearchEngine.Bing -> Icons.Default.TravelExplore
+        SearchEngine.Yandex -> Icons.Default.Language
+        SearchEngine.TinEye -> Icons.Default.Visibility
+        SearchEngine.Perplexity -> Icons.Default.Psychology
+        SearchEngine.ChatGPT -> Icons.Default.Chat
+    }
+}
 
                 // Reset everything when bitmap changes (new area selected)
                 LaunchedEffect(selectedBitmap) {
