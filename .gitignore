@@ -43,3 +43,8 @@ local.properties
 builderors.md
 SearchMethodSelector.kt.snippet
 GEMINI.md
+
+# Documentation and Metadata
+docs/
+core/
+fastlane/metadata/android/en-US/
