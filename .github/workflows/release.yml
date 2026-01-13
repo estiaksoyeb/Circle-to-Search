@@ -1,0 +1,64 @@
+name: Official Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on tags like v1.0, v1.1, etc.
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # 1. Build the Unsigned APK
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+
+    # 2. Sign the APK using your GitHub Secrets
+    - name: Sign Release APK
+      uses: r0adkll/sign-android-release@v1
+      id: sign_app
+      with:
+        releaseDirectory: app/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.SIGNING_KEY_BASE64 }}
+        alias: ${{ secrets.ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+      env:
+        BUILD_TOOLS_VERSION: "34.0.0"
+
+    # 3. Rename APK to something nicer
+    - name: Rename Signed APK
+      run: mv "${{ steps.sign_app.outputs.signedReleaseFile }}" "CircleToSearch-${{ github.ref_name }}.apk"
+
+    # 4. Create GitHub Release and upload APK
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: CircleToSearch-${{ github.ref_name }}.apk
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # 5. Upload APK as Artifact
+    - name: Upload Signed APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: CircleToSearch-Signed-APK
+        path: CircleToSearch-${{ github.ref_name }}.apk
+        if-no-files-found: error

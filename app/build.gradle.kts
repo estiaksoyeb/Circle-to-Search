@@ -31,13 +31,19 @@ android {
 
 
     defaultConfig {
-        applicationId = "com.akslabs.circletosearch"
+        applicationId = "xyz.app.circletosearch"
         minSdk = 29
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.3"
+        versionCode = 1
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Optimize APK size
+        resourceConfigurations += setOf("en") // Only keep English resources
+        ndk {
+            abiFilters += setOf("armeabi-v7a", "arm64-v8a") // Exclude x86/x86_64 (emulators)
+        }
     }
 
     buildTypes {
