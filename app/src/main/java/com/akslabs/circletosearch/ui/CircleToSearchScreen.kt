@@ -439,7 +439,12 @@ fun CircleToSearchScreen(
 
                         Tab(
                             selected = selected,
-                            onClick = { selectedEngine = engine },
+                            onClick = { 
+                                selectedEngine = engine
+                                if (!initializedEngines.contains(engine)) {
+                                    initializedEngines.add(engine)
+                                }
+                            },
                             interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                             modifier = Modifier.graphicsLayer { 
                                 scaleX = scale
@@ -543,25 +548,14 @@ fun CircleToSearchScreen(
                              searchUrl = preloadedUrls[selectedEngine]
                         }
                         
-                        // 4. SMART LOADING SEQUENCE
+                        // 4. SMART LOADING SEQUENCE (Lazy)
                         // First, ensure selected engine is initialized
                         if (!initializedEngines.contains(selectedEngine)) {
                             initializedEngines.add(selectedEngine)
                         }
                         
                         isLoading = false
-                        
-                        // Then, load others sequentially
-                        scope.launch {
-                            searchEngines.forEach { engine ->
-                                if (engine != selectedEngine) {
-                                    delay(300) // Reduced from 800ms for faster loading
-                                    if (!initializedEngines.contains(engine)) {
-                                        initializedEngines.add(engine)
-                                    }
-                                }
-                            }
-                        }
+                        // Background loading removed for performance. Engines load only when selected.
                     }
                 }
                 
