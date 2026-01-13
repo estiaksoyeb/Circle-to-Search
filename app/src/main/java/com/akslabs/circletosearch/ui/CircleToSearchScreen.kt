@@ -75,6 +75,12 @@ import androidx.compose.material.icons.filled.BorderOuter
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.filled.TravelExplore
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -1159,5 +1165,16 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
 fun ContainedLoadingIndicatorSample() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         androidx.compose.material3.ContainedLoadingIndicator()
+    }
+}
+
+fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.ImageVector {
+    return when (engine) {
+        SearchEngine.Google -> Icons.Default.Search
+        SearchEngine.Bing -> Icons.Default.TravelExplore
+        SearchEngine.Yandex -> Icons.Default.Language
+        SearchEngine.TinEye -> Icons.Default.Visibility
+        SearchEngine.Perplexity -> Icons.Default.Psychology
+        SearchEngine.ChatGPT -> Icons.Default.Chat
     }
 }
