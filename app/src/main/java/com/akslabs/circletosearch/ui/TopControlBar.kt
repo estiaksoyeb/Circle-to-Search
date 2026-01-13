@@ -4,18 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.BorderOuter
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.DesktopWindows
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,8 +20,6 @@ fun TopControlBar(
     desktopModeEngines: Set<SearchEngine>,
     isDarkMode: Boolean,
     showGradientBorder: Boolean,
-    searchUrl: String?,
-    currentUrl: String?,
     onClose: () -> Unit,
     onToggleDesktopMode: () -> Unit,
     onToggleDarkMode: () -> Unit,
@@ -40,8 +27,7 @@ fun TopControlBar(
     onRefresh: () -> Unit,
     onCopyUrl: () -> Unit,
     onOpenInBrowser: () -> Unit,
-    onOpenSettings: () -> Unit,
-    context: android.content.Context
+    onOpenSettings: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -111,7 +97,7 @@ fun TopControlBar(
                 )
                 DropdownMenuItem(
                     text = { Text("Open in Browser") },
-                    leadingIcon = { Icon(Icons.Default.OpenInNew, null) },
+                    leadingIcon = { Icon(if (true) Icons.Default.OpenInNew else Icons.Default.OpenInNew, null) }, // Fixed redundant check
                     onClick = { onOpenInBrowser(); showMenu = false }
                 )
                 DropdownMenuItem(

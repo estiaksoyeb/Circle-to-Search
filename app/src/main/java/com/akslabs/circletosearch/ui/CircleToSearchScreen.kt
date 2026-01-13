@@ -1,31 +1,31 @@
 /*
- *
+ * 
  *  * Copyright (C) 2025 AKS-Labs (original author)
- *  *
+ *  * 
  *  * This program is free software: you can redistribute it and/or modify
  *  * it under the terms of the GNU General Public License as published by
  *  * the Free Software Foundation, either version 3 of the License, or
  *  * (at your option) any later version.
- *  *
+ *  * 
  *  * This program is distributed in the hope that it will be useful,
  *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  * GNU General Public License for more details.
- *  *
+ *  * 
  *  * You should have received a copy of the GNU General Public License
- *  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
+ *  * along with this program.  See <https://www.gnu.org/licenses/>.
+ * 
  */
 
 package com.akslabs.circletosearch.ui
 
 import android.graphics.Bitmap
-import android.webkit.WebView
+import android.graphics.Rect
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -35,7 +35,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
@@ -64,23 +67,18 @@ fun CircleToSearchScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     
-    // Initialize preferences
     val uiPreferences = remember { UIPreferences(context) }
 
-    // Text Selection State
     var isTextSelectionMode by remember { mutableStateOf(false) }
     val textNodes = remember { mutableStateListOf<TextNode>() }
     val clipboardManager = LocalClipboardManager.current
     var showTextDialog by remember { mutableStateOf<String?>(null) }
 
-    // Load text nodes once on start
     LaunchedEffect(Unit) {
         val nodes = TextRepository.getTextNodes()
         textNodes.addAll(nodes)
-        android.util.Log.d("CircleToSearch", "UI loaded ${nodes.size} text nodes")
     }
     
-    // Search Engines Order Logic
     val preferredOrder = remember(uiPreferences.getSearchEngineOrder()) {
         val allEngines = SearchEngine.values()
         val orderString = uiPreferences.getSearchEngineOrder()
@@ -97,10 +95,7 @@ fun CircleToSearchScreen(
     }
     val searchEngines = preferredOrder
 
-    // Support Settings Sheet
     var showSettingsScreen by remember { mutableStateOf(false) }
-
-    // Friendly Message State
     var friendlyMessage by remember { mutableStateOf("") }
     var isMessageVisible by remember { mutableStateOf(false) }
 
@@ -108,44 +103,32 @@ fun CircleToSearchScreen(
         if (uiPreferences.isShowFriendlyMessages()) {
             val manager = FriendlyMessageManager(context)
             friendlyMessage = manager.getNextMessage()
-            delay(500) // Small delay for smooth entrance
+            delay(500)
             isMessageVisible = true
-            delay(4000) // Show for 4 seconds
+            delay(4000)
             isMessageVisible = false
         }
     }
 
-    // Search State
     var selectedEngine by remember(searchEngines) { mutableStateOf<SearchEngine>(searchEngines.first()) }
     var searchUrl by remember { mutableStateOf<String?>(null) }
     var hostedImageUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     
-    // Desktop Mode - Per Tab
-    val initialDesktopMode = uiPreferences.isDesktopMode() // Global default
+    val initialDesktopMode = uiPreferences.isDesktopMode()
     var desktopModeEngines by remember { mutableStateOf<Set<SearchEngine>>(if(initialDesktopMode) searchEngines.toSet() else emptySet()) }
     
     var isDarkMode by remember { mutableStateOf(uiPreferences.isDarkMode()) }
     var showGradientBorder by remember { mutableStateOf(uiPreferences.isShowGradientBorder()) }
-    
-    // Track initialized engines for Smart Loading
     val initializedEngines = remember { mutableStateListOf<SearchEngine>() }
     
     fun isDesktop(engine: SearchEngine) = desktopModeEngines.contains(engine)
     
-    LaunchedEffect(isDarkMode) {
-        uiPreferences.setDarkMode(isDarkMode)
-    }
+    LaunchedEffect(isDarkMode) { uiPreferences.setDarkMode(isDarkMode) }
+    LaunchedEffect(showGradientBorder) { uiPreferences.setShowGradientBorder(showGradientBorder) }
     
-    LaunchedEffect(showGradientBorder) {
-        uiPreferences.setShowGradientBorder(showGradientBorder)
-    }
-    
-    // Cache for preloaded URLs
     val preloadedUrls = remember { mutableMapOf<SearchEngine, String>() }
-    
-    // WebView Cache
-    val webViews = remember { mutableMapOf<SearchEngine, WebView>() }
+    val webViews = remember { mutableMapOf<SearchEngine, android.webkit.WebView>() }
     
     LaunchedEffect(desktopModeEngines) {
         webViews.forEach { (engine, wv) ->
@@ -155,7 +138,6 @@ fun CircleToSearchScreen(
             } else {
                 "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
             }
-            
             if (wv.settings.userAgentString != newUserAgent) {
                 wv.settings.userAgentString = newUserAgent
                 wv.reload()
@@ -167,24 +149,15 @@ fun CircleToSearchScreen(
         webViews.values.forEach { wv ->
             try {
                 if (isDarkMode) {
-                    wv.webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView?, url: String?) {
+                    wv.webViewClient = object : android.webkit.WebViewClient() {
+                        override fun onPageFinished(view: android.webkit.WebView?, url: String?) {
                             super.onPageFinished(view, url)
-                            val darkModeCSS = """
-                                javascript:(function() {
-                                    var style = document.createElement('style');
-                                    style.innerHTML = `
-                                        html { filter: invert(1) hue-rotate(180deg) !important; background: #000 !important; }
-                                        img, video, [style*="background-image"] { filter: invert(1) hue-rotate(180deg) !important; }
-                                    `;
-                                    document.head.appendChild(style);
-                                })()
-                            """.trimIndent()
+                            val darkModeCSS = "javascript:(function() { var style = document.createElement('style'); style.innerHTML = 'html { filter: invert(1) hue-rotate(180deg) !important; background: #000 !important; } img, video, [style*=\"background-image\"] { filter: invert(1) hue-rotate(180deg) !important; }'; document.head.appendChild(style); })()"
                             view?.loadUrl(darkModeCSS)
                         }
                     }
                 } else {
-                    wv.webViewClient = WebViewClient()
+                    wv.webViewClient = android.webkit.WebViewClient()
                 }
                 wv.reload()
             } catch (e: Exception) {
@@ -194,26 +167,16 @@ fun CircleToSearchScreen(
     }
     
     val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            skipHiddenState = false
-        )
+        bottomSheetState = rememberStandardBottomSheetState(initialValue = SheetValue.Hidden, skipHiddenState = false)
     )
 
-    // Selection State
     var selectedBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isSearching by remember { mutableStateOf(false) }
     
-    // Helper to create and configure WebView
-    fun createWebView(ctx: android.content.Context, engine: SearchEngine): WebView {
-        return WebView(ctx).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            
+    fun createWebView(ctx: android.content.Context, engine: SearchEngine): android.webkit.WebView {
+        return android.webkit.WebView(ctx).apply {
+            layoutParams = android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
             setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
-            
             settings.apply {
                 javaScriptEnabled = true
                 domStorageEnabled = true
@@ -230,52 +193,20 @@ fun CircleToSearchScreen(
                 displayZoomControls = false
                 useWideViewPort = true
                 loadWithOverviewMode = true
-                
                 userAgentString = if (isDesktop(engine)) {
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 } else {
                     "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 }
             }
-            
             isVerticalScrollBarEnabled = false
             isHorizontalScrollBarEnabled = false
             android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-
-            webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    super.onPageFinished(view, url)
-                    if (isDarkMode) {
-                        val darkModeCSS = """
-                            javascript:(function() {
-                                var style = document.createElement('style');
-                                style.innerHTML = `
-                                    html { filter: invert(1) hue-rotate(180deg) !important; background: #000 !important; }
-                                    img, video, [style*="background-image"] { filter: invert(1) hue-rotate(180deg) !important; }
-                                `;
-                                document.head.appendChild(style);
-                            })()
-                        """.trimIndent()
-                        view?.loadUrl(darkModeCSS)
-                    }
-                }
-            }
+            webViewClient = android.webkit.WebViewClient()
             isNestedScrollingEnabled = true
-            setOnTouchListener { v, event ->
-                when (event.action) {
-                    android.view.MotionEvent.ACTION_DOWN -> {
-                        v.parent.requestDisallowInterceptTouchEvent(true)
-                    }
-                    android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
-                        v.parent.requestDisallowInterceptTouchEvent(false)
-                    }
-                }
-                false
-            }
         }
     }
 
-    // Back Handler Logic
     BackHandler(enabled = true) {
         val currentWebView = webViews[selectedEngine]
         if (currentWebView != null && currentWebView.canGoBack()) {
@@ -295,11 +226,7 @@ fun CircleToSearchScreen(
         sheetContainerColor = Color(0xFF1F1F1F),
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
         sheetDragHandle = { 
-            BottomSheetDefaults.DragHandle(
-                color = Color.White.copy(alpha = 0.3f),
-                width = 32.dp,
-                height = 3.dp
-            )
+            BottomSheetDefaults.DragHandle(color = Color.White.copy(alpha = 0.3f), width = 32.dp, height = 3.dp)
         },
         sheetSwipeEnabled = true,
         sheetContent = {
@@ -322,70 +249,31 @@ fun CircleToSearchScreen(
             )
         }
     ) { _ ->
-        // Root Box
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-        ) {
-            // Friendly Message Overlay
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(y = 100.dp)
-                    .zIndex(100f),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                FriendlyMessageBubble(
-                    message = friendlyMessage,
-                    visible = isMessageVisible
-                )
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+            Box(modifier = Modifier.fillMaxSize().offset(y = 100.dp).zIndex(100f), contentAlignment = Alignment.TopCenter) {
+                FriendlyMessageBubble(message = friendlyMessage, visible = isMessageVisible)
             }
 
-            // Screenshot and Tint
             if (screenshot != null) {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    androidx.compose.foundation.Image(
-                        bitmap = androidx.compose.ui.graphics.asImageBitmap(screenshot),
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Image(
+                        bitmap = screenshot.asImageBitmap(),
                         contentDescription = "Screenshot",
-                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                                    colors = OverlayGradientColors.map { it.copy(alpha = 0.3f) }
-                                )
-                            )
-                    )
+                    Box(modifier = Modifier.fillMaxSize().background(brush = Brush.verticalGradient(colors = OverlayGradientColors.map { it.copy(alpha = 0.3f) }})))
                 }
             }
 
-            // Gradient Border
             if (showGradientBorder) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .border(
-                            width = 8.dp,
-                            brush = androidx.compose.ui.graphics.Brush.verticalGradient(colors = OverlayGradientColors),
-                            shape = RoundedCornerShape(24.dp)
-                        )
-                        .clip(RoundedCornerShape(24.dp))
-                )
+                Box(modifier = Modifier.fillMaxSize().border(width = 8.dp, brush = Brush.verticalGradient(colors = OverlayGradientColors), shape = RoundedCornerShape(24.dp)).clip(RoundedCornerShape(24.dp)))
             }
 
-            // Search Overlay (Canvas)
             SearchOverlay(
                 isTextSelectionMode = isTextSelectionMode,
                 textNodes = textNodes,
-                onTextSelected = { text ->
-                    showTextDialog = text
-                },
+                onTextSelected = { text -> showTextDialog = text },
                 onSelectionComplete = { rect ->
                     selectedBitmap = ImageUtils.cropBitmap(screenshot!!, rect)
                     isSearching = true
@@ -396,14 +284,11 @@ fun CircleToSearchScreen(
                 }
             )
 
-            // Top Control Bar
             TopControlBar(
                 selectedEngine = selectedEngine,
                 desktopModeEngines = desktopModeEngines,
                 isDarkMode = isDarkMode,
                 showGradientBorder = showGradientBorder,
-                searchUrl = searchUrl,
-                currentUrl = webViews[selectedEngine]?.url,
                 onClose = onClose,
                 onToggleDesktopMode = {
                     val newSet = desktopModeEngines.toMutableSet()
@@ -414,26 +299,21 @@ fun CircleToSearchScreen(
                 onToggleGradientBorder = { showGradientBorder = !showGradientBorder },
                 onRefresh = { webViews[selectedEngine]?.reload() },
                 onCopyUrl = {
-                    if (searchUrl != null) {
-                        clipboardManager.setText(AnnotatedString(searchUrl!!))
-                    }
+                    searchUrl?.let { clipboardManager.setText(AnnotatedString(it)) }
                 },
                 onOpenInBrowser = {
-                    val currentUrl = webViews[selectedEngine]?.url ?: searchUrl
-                    if (currentUrl != null) {
+                    val url = webViews[selectedEngine]?.url ?: searchUrl
+                    url?.let {
                         try {
-                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(currentUrl))
-                            context.startActivity(intent)
+                            context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(it)))
                         } catch (e: Exception) {
                             android.util.Log.e("CircleToSearch", "Failed to open browser", e)
                         }
                     }
                 },
-                onOpenSettings = { showSettingsScreen = true },
-                context = context
+                onOpenSettings = { showSettingsScreen = true }
             )
 
-            // Bottom Control Bar
             Box(modifier = Modifier.align(Alignment.BottomCenter)) {
                 BottomControlBar(
                     selectedBitmap = selectedBitmap,
@@ -442,18 +322,13 @@ fun CircleToSearchScreen(
                     onExpandSheet = { scope.launch { scaffoldState.bottomSheetState.expand() } },
                     onToggleTextSelection = {
                         isTextSelectionMode = !isTextSelectionMode
-                        if (isTextSelectionMode) {
-                            Toast.makeText(context, "Text Selection Mode On", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "Text Selection Mode Off", Toast.LENGTH_SHORT).show()
-                        }
+                        Toast.makeText(context, "Text Selection Mode ${if (isTextSelectionMode) "On" else "Off"}", Toast.LENGTH_SHORT).show()
                     },
                     onGoogleLensClick = {
                         if (screenshot != null) {
                             scope.launch(kotlinx.coroutines.Dispatchers.IO) {
                                 val path = ImageUtils.saveBitmap(context, screenshot)
-                                val uri = android.net.Uri.fromFile(File(path))
-                                searchWithGoogleLens(uri, context)
+                                searchWithGoogleLens(android.net.Uri.fromFile(File(path)), context)
                             }
                             onClose()
                         }
@@ -461,9 +336,6 @@ fun CircleToSearchScreen(
                 )
             }
 
-            // Logic Effects
-            
-            // Reset everything when bitmap changes (new area selected)
             LaunchedEffect(selectedBitmap) {
                 hostedImageUrl = null
                 searchUrl = null
@@ -476,32 +348,20 @@ fun CircleToSearchScreen(
             LaunchedEffect(selectedBitmap, hostedImageUrl) {
                 if (selectedBitmap != null) {
                     isLoading = true
-                    
                     if (uiPreferences.isUseGoogleLensOnly()) {
                         val path = ImageUtils.saveBitmap(context, selectedBitmap!!)
-                        val uri = android.net.Uri.fromFile(java.io.File(path))
-                        val success = searchWithGoogleLens(uri, context)
-                        if (success) {
+                        if (searchWithGoogleLens(android.net.Uri.fromFile(File(path)), context)) {
                             onClose()
                             return@LaunchedEffect
                         }
                     }
-
                     scope.launch { scaffoldState.bottomSheetState.expand() }
-
                     if (hostedImageUrl == null) {
-                        val url = ImageSearchUploader.uploadToImageHost(selectedBitmap!!)
-                        if (url != null) {
-                            hostedImageUrl = url
-                        } else {
-                            isLoading = false
-                            return@LaunchedEffect
-                        }
+                        ImageSearchUploader.uploadToImageHost(selectedBitmap!!)?.let { hostedImageUrl = it } ?: run { isLoading = false; return@LaunchedEffect }
                     }
-
                     searchEngines.forEach { engine ->
                         if (!preloadedUrls.containsKey(engine)) {
-                            val url = if (engine.isDirectUpload) {
+                            val url = if (com.akslabs.circletosearch.data.isDirectUpload(engine)) {
                                  when (engine) {
                                     SearchEngine.Perplexity -> ImageSearchUploader.getPerplexityUrl(hostedImageUrl!!)
                                     SearchEngine.ChatGPT -> ImageSearchUploader.getChatGPTUrl(hostedImageUrl!!)
@@ -516,59 +376,38 @@ fun CircleToSearchScreen(
                                     else -> null
                                 }
                             }
-                            if (url != null) preloadedUrls[engine] = url
+                            url?.let { preloadedUrls[engine] = it }
                         }
                     }
-
-                    if (preloadedUrls.containsKey(selectedEngine)) {
-                         searchUrl = preloadedUrls[selectedEngine]
-                    }
-                    
-                    if (!initializedEngines.contains(selectedEngine)) {
-                        initializedEngines.add(selectedEngine)
-                    }
-                    
+                    preloadedUrls[selectedEngine]?.let { searchUrl = it }
+                    if (!initializedEngines.contains(selectedEngine)) initializedEngines.add(selectedEngine)
                     isLoading = false
                 }
             }
             
             LaunchedEffect(selectedEngine, preloadedUrls) {
-                if (preloadedUrls.containsKey(selectedEngine)) {
-                    searchUrl = preloadedUrls[selectedEngine]
-                }
+                preloadedUrls[selectedEngine]?.let { searchUrl = it }
             }
 
-            // Dialogs
             if (showSettingsScreen) {
-                SettingsScreen(
-                    uiPreferences = uiPreferences,
-                    onDismissRequest = { showSettingsScreen = false }
-                )
+                SettingsScreen(uiPreferences = uiPreferences, onDismissRequest = { showSettingsScreen = false })
             }
             
             if (showTextDialog != null) {
                 AlertDialog(
                     onDismissRequest = { showTextDialog = null },
-                    icon = { Icon(Icons.Default.TextFormat, contentDescription = null) },
+                    icon = { Icon(Icons.Default.TextFormat, null) },
                     title = { Text("Selected Text") },
-                    text = {
-                        SelectionContainer {
-                            Text(showTextDialog!!)
-                        }
-                    },
+                    text = { SelectionContainer { Text(showTextDialog!!) } },
                     confirmButton = {
                         TextButton(onClick = {
                             clipboardManager.setText(AnnotatedString(showTextDialog!!))
                             Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
                             showTextDialog = null
-                        }) {
-                            Text("Copy")
-                        }
+                        }) { Text("Copy") }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showTextDialog = null }) {
-                            Text("Close")
-                        }
+                        TextButton(onClick = { showTextDialog = null }) { Text("Close") }
                     }
                 )
             }

@@ -3,8 +3,6 @@ package com.akslabs.circletosearch.ui
 import android.content.Context
 import android.view.ViewGroup
 import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.webkit.WebSettings
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
@@ -14,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +24,6 @@ import androidx.compose.ui.zIndex
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.akslabs.circletosearch.data.SearchEngine
 import com.akslabs.circletosearch.data.isDirectUpload
-import androidx.compose.runtime.key
 
 @Composable
 fun SearchResultsSheet(
@@ -92,7 +90,7 @@ fun SearchResultsSheet(
                             Text(
                                 engine.name,
                                 style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal
+                                    fontWeight = FontWeight.Medium
                                 ),
                                 color = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
                             )
