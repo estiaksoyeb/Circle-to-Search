@@ -3,6 +3,8 @@ package com.akslabs.circletosearch.ui
 import android.content.Context
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.webkit.WebSettings
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
@@ -16,11 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.akslabs.circletosearch.data.SearchEngine
+import com.akslabs.circletosearch.data.isDirectUpload
+import androidx.compose.runtime.key
 
 @Composable
 fun SearchResultsSheet(

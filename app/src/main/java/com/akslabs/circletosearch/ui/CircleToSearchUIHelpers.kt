@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.akslabs.circletosearch.data.SearchEngine
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ContainedLoadingIndicatorSample() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
