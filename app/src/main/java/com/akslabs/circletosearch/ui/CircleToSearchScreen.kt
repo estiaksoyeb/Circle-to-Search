@@ -695,7 +695,7 @@ fun CircleToSearchScreen(
                             color = Color.White.copy(alpha = 0.3f),
                             topLeft = Offset(node.bounds.left.toFloat(), node.bounds.top.toFloat()),
                             size = Size(node.bounds.width().toFloat(), node.bounds.height().toFloat()),
-                            style = Fill
+                            style = androidx.compose.ui.graphics.drawscope.Fill
                         )
                         drawRect(
                             color = Color.White,
