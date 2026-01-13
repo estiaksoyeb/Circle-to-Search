@@ -418,7 +418,7 @@ fun CircleToSearchScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(800.dp)
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                    .background(Color(0xFF1F1F1F), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 
@@ -426,20 +426,21 @@ fun CircleToSearchScreen(
                 ScrollableTabRow(
                     selectedTabIndex = searchEngines.indexOf(selectedEngine),
                     edgePadding = 16.dp,
-                    containerColor = Color.Transparent,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    containerColor = Color(0xFF1F1F1F),
+                    contentColor = Color.White,
                     divider = {},
                     indicator = {}
                 ) {
                     searchEngines.forEach { engine ->
                         val selected = selectedEngine == engine
                         val transition = androidx.compose.animation.core.updateTransition(targetState = selected, label = "TabSelect")
-                        val scale by transition.animateFloat(label = "Scale") { if (it) 1.05f else 1f }
+                        val scale by transition.animateFloat(label = "Scale") { if (it) 1.02f else 1f }
                         val alpha by transition.animateFloat(label = "Alpha") { if (it) 1f else 0.7f }
 
                         Tab(
                             selected = selected,
                             onClick = { selectedEngine = engine },
+                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                             modifier = Modifier.graphicsLayer { 
                                 scaleX = scale
                                 scaleY = scale
@@ -448,23 +449,20 @@ fun CircleToSearchScreen(
                             text = {
                                 Text(
                                     engine.name,
-                                    style = MaterialTheme.typography.labelLarge.copy(
-                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal
                                     ),
                                     modifier = Modifier
                                         .background(
-                                            if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.5f),
-                                            RoundedCornerShape(16.dp)
+                                            if (selected) Color.White.copy(alpha = 0.15f) else Color.Transparent,
+                                            RoundedCornerShape(20.dp)
                                         )
-                                        .border(
-                                             width = 1.dp,
-                                             color = if(selected) MaterialTheme.colorScheme.primary.copy(alpha=0.5f) else Color.Transparent,
-                                             shape = RoundedCornerShape(16.dp)
-                                        )
-                                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                                    color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                                    color = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
                                 )
-                            }
+                            },
+                            selectedContentColor = Color.Transparent,
+                            unselectedContentColor = Color.Transparent
                         )
                     }
                 }
