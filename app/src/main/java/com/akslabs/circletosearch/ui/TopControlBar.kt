@@ -70,36 +70,40 @@ fun TopControlBar(
                 onDismissRequest = { showMenu = false }
             ) {
                 val isDesktop = desktopModeEngines.contains(selectedEngine)
-                DropdownMenuItem(
-                    text = { Text(if (isDesktop) "Mobile Mode" else "Desktop Mode") },
-                    leadingIcon = { Icon(if (isDesktop) Icons.Default.Smartphone else Icons.Default.DesktopWindows, null) },
-                    onClick = { onToggleDesktopMode(); showMenu = false }
-                )
-                DropdownMenuItem(
-                    text = { Text(if (isDarkMode) "Light Mode" else "Dark Mode") },
-                    leadingIcon = { Icon(if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode, null) },
-                    onClick = { onToggleDarkMode(); showMenu = false }
-                )
+                if (selectedEngine.supportsBrowserOptions) {
+                    DropdownMenuItem(
+                        text = { Text(if (isDesktop) "Mobile Mode" else "Desktop Mode") },
+                        leadingIcon = { Icon(if (isDesktop) Icons.Default.Smartphone else Icons.Default.DesktopWindows, null) },
+                        onClick = { onToggleDesktopMode(); showMenu = false }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(if (isDarkMode) "Light Mode" else "Dark Mode") },
+                        leadingIcon = { Icon(if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode, null) },
+                        onClick = { onToggleDarkMode(); showMenu = false }
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text(if (showGradientBorder) "Hide Border" else "Show Border") },
                     leadingIcon = { Icon(Icons.Default.BorderOuter, null) },
                     onClick = { onToggleGradientBorder(); showMenu = false }
                 )
-                DropdownMenuItem(
-                    text = { Text("Refresh") },
-                    leadingIcon = { Icon(Icons.Default.Refresh, null) },
-                    onClick = { onRefresh(); showMenu = false }
-                )
-                DropdownMenuItem(
-                    text = { Text("Copy URL") },
-                    leadingIcon = { Icon(Icons.Default.ContentCopy, null) },
-                    onClick = { onCopyUrl(); showMenu = false }
-                )
-                DropdownMenuItem(
-                    text = { Text("Open in Browser") },
-                    leadingIcon = { Icon(if (true) Icons.Default.OpenInNew else Icons.Default.OpenInNew, null) }, // Fixed redundant check
-                    onClick = { onOpenInBrowser(); showMenu = false }
-                )
+                if (selectedEngine.supportsBrowserOptions) {
+                    DropdownMenuItem(
+                        text = { Text("Refresh") },
+                        leadingIcon = { Icon(Icons.Default.Refresh, null) },
+                        onClick = { onRefresh(); showMenu = false }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Copy URL") },
+                        leadingIcon = { Icon(Icons.Default.ContentCopy, null) },
+                        onClick = { onCopyUrl(); showMenu = false }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Open in Browser") },
+                        leadingIcon = { Icon(Icons.Default.OpenInNew, null) },
+                        onClick = { onOpenInBrowser(); showMenu = false }
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text("Settings") },
                     leadingIcon = { Icon(Icons.Default.Settings, null) },

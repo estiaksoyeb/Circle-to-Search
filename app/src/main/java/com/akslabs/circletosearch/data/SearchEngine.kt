@@ -20,7 +20,11 @@
 package com.akslabs.circletosearch.data
 
 sealed class SearchEngine(val displayName: String) {
-    object Google : SearchEngine("Google")
+    open val supportsBrowserOptions: Boolean = true
+
+    object Google : SearchEngine("Google") {
+        override val supportsBrowserOptions: Boolean = false
+    }
     object Bing : SearchEngine("Bing")
     object Yandex : SearchEngine("Yandex")
     object TinEye : SearchEngine("TinEye")
