@@ -324,7 +324,6 @@ fun CircleToSearchScreen(
                     onExpandSheet = { scope.launch { scaffoldState.bottomSheetState.expand() } },
                     onToggleTextSelection = {
                         isTextSelectionMode = !isTextSelectionMode
-                        Toast.makeText(context, "Text Selection Mode ${if (isTextSelectionMode) "On" else "Off"}", Toast.LENGTH_SHORT).show()
                     },
                     onGoogleLensClick = {
                         if (screenshot != null) {
