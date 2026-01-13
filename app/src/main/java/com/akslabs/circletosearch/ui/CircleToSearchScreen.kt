@@ -39,6 +39,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.TravelExplore
@@ -63,6 +64,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -101,6 +103,7 @@ fun CircleToSearchScreen(
     var isTextSelectionMode by remember { mutableStateOf(false) }
     val textNodes = remember { mutableStateListOf<TextNode>() }
     val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
+    var showTextDialog by remember { mutableStateOf<String?>(null) } // Text to show in dialog
 
     // Load text nodes once on start
     LaunchedEffect(Unit) {
@@ -109,7 +112,7 @@ fun CircleToSearchScreen(
         android.util.Log.d("CircleToSearch", "UI loaded ${nodes.size} text nodes")
     }
     
-    // ... (rest of state initialization)
+    // Search Engines Order Logic
     val preferredOrder = remember(uiPreferences.getSearchEngineOrder()) {
         val allEngines = SearchEngine.values()
         val orderString = uiPreferences.getSearchEngineOrder()
@@ -643,8 +646,7 @@ fun CircleToSearchScreen(
                                 }
                                 
                                 if (tappedNode != null) {
-                                    clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(tappedNode.text))
-                                    Toast.makeText(context, "Copied: ${tappedNode.text}", Toast.LENGTH_SHORT).show()
+                                    showTextDialog = tappedNode.text
                                 }
                             }
                         } else {
@@ -975,6 +977,33 @@ fun CircleToSearchScreen(
                 SettingsScreen(
                     uiPreferences = uiPreferences,
                     onDismissRequest = { showSettingsScreen = false }
+                )
+            }
+            
+            if (showTextDialog != null) {
+                AlertDialog(
+                    onDismissRequest = { showTextDialog = null },
+                    icon = { Icon(Icons.Default.TextFormat, contentDescription = null) },
+                    title = { Text("Selected Text") },
+                    text = {
+                        SelectionContainer {
+                            Text(showTextDialog!!)
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            clipboardManager.setText(AnnotatedString(showTextDialog!!))
+                            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                            showTextDialog = null
+                        }) {
+                            Text("Copy")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showTextDialog = null }) {
+                            Text("Close")
+                        }
+                    }
                 )
             }
         }
