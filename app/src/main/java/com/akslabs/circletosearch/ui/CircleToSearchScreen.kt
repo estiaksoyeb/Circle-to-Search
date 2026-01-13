@@ -1070,8 +1070,11 @@ fun CircleToSearchScreen(
                     .padding(horizontal = 20.dp)
                     .pointerInput(Unit) {
                         detectTapGestures {
-                            scope.launch { 
-                                scaffoldState.bottomSheetState.expand()
+                            // Only expand if NOT Lens Only AND a bitmap is selected
+                            if (!uiPreferences.isUseGoogleLensOnly() && selectedBitmap != null) {
+                                scope.launch { 
+                                    scaffoldState.bottomSheetState.expand()
+                                }
                             }
                         }
                     }
