@@ -27,50 +27,28 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.TravelExplore
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.TextFormat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.akslabs.circletosearch.data.SearchEngine
+import com.akslabs.circletosearch.data.TextNode
+import com.akslabs.circletosearch.data.TextRepository
 import com.akslabs.circletosearch.data.isDirectUpload
 import com.akslabs.circletosearch.ui.components.FriendlyMessageBubble
 import com.akslabs.circletosearch.ui.components.searchWithGoogleLens
@@ -81,11 +59,7 @@ import com.akslabs.circletosearch.utils.ImageUtils
 import com.akslabs.circletosearch.utils.UIPreferences
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.max
-import kotlin.math.min
-
-import com.akslabs.circletosearch.data.TextRepository
-import com.akslabs.circletosearch.data.TextNode
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,8 +76,8 @@ fun CircleToSearchScreen(
     // Text Selection State
     var isTextSelectionMode by remember { mutableStateOf(false) }
     val textNodes = remember { mutableStateListOf<TextNode>() }
-    val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
-    var showTextDialog by remember { mutableStateOf<String?>(null) } // Text to show in dialog
+    val clipboardManager = LocalClipboardManager.current
+    var showTextDialog by remember { mutableStateOf<String?>(null) }
 
     // Load text nodes once on start
     LaunchedEffect(Unit) {
@@ -232,21 +206,10 @@ fun CircleToSearchScreen(
         )
     )
 
-    // Drawing State
-    val currentPathPoints = remember { mutableStateListOf<Offset>() }
-    
     // Selection State
     var selectedBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isSearching by remember { mutableStateOf(false) }
-    var selectionRect by remember { mutableStateOf<Rect?>(null) }
-    val selectionAnim = remember { androidx.compose.animation.core.Animatable(0f) }
     
-    // Gradient Animation
-    val alphaAnim by animateFloatAsState(
-        targetValue = if (screenshot != null) 1f else 0f,
-        animationSpec = tween(1000), label = "alpha"
-    )
-
     // Helper to create and configure WebView
     fun createWebView(ctx: android.content.Context, engine: SearchEngine): WebView {
         return WebView(ctx).apply {
@@ -346,245 +309,32 @@ fun CircleToSearchScreen(
         },
         sheetSwipeEnabled = true,
         sheetContent = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(800.dp)
-                    .background(Color(0xFF1F1F1F), RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                ScrollableTabRow(
-                    selectedTabIndex = searchEngines.indexOf(selectedEngine),
-                    edgePadding = 16.dp,
-                    containerColor = Color(0xFF1F1F1F),
-                    contentColor = Color.White,
-                    divider = {},
-                    indicator = {}
-                ) {
-                    searchEngines.forEach { engine ->
-                        val selected = selectedEngine == engine
-                        val transition = androidx.compose.animation.core.updateTransition(targetState = selected, label = "TabSelect")
-                        val scale by transition.animateFloat(label = "Scale") { if (it) 1.02f else 1f }
-                        val alpha by transition.animateFloat(label = "Alpha") { if (it) 1f else 0.7f }
-
-                        Tab(
-                            selected = selected,
-                            onClick = { 
-                                selectedEngine = engine
-                                if (!initializedEngines.contains(engine)) {
-                                    initializedEngines.add(engine)
-                                }
-                            },
-                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                            modifier = Modifier.graphicsLayer { 
-                                scaleX = scale
-                                scaleY = scale
-                                this.alpha = alpha
-                            },
-                            text = {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .background(
-                                            if (selected) Color.White.copy(alpha = 0.15f) else Color.Transparent,
-                                            RoundedCornerShape(20.dp)
-                                        )
-                                        .padding(horizontal = 14.dp, vertical = 6.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = getEngineIcon(engine),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                        tint = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        engine.name,
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal
-                                        ),
-                                        color = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
-                                    )
-                                }
-                            },
-                            selectedContentColor = Color.Transparent,
-                            unselectedContentColor = Color.Transparent
-                        )
+            SearchResultsSheet(
+                searchEngines = searchEngines,
+                selectedEngine = selectedEngine,
+                initializedEngines = initializedEngines,
+                preloadedUrls = preloadedUrls,
+                webViews = webViews,
+                isLoading = isLoading,
+                isDesktop = ::isDesktop,
+                isDarkMode = isDarkMode,
+                onEngineSelected = { engine ->
+                    selectedEngine = engine
+                    if (!initializedEngines.contains(engine)) {
+                        initializedEngines.add(engine)
                     }
-                }
-
-                // Reset everything when bitmap changes
-                LaunchedEffect(selectedBitmap) {
-                    hostedImageUrl = null
-                    searchUrl = null
-                    preloadedUrls.clear()
-                    initializedEngines.clear()
-                    webViews.values.forEach { it.destroy() }
-                    webViews.clear()
-                }
-
-                LaunchedEffect(selectedBitmap, hostedImageUrl) {
-                    if (selectedBitmap != null) {
-                        isLoading = true
-                        
-                        if (uiPreferences.isUseGoogleLensOnly()) {
-                            val path = ImageUtils.saveBitmap(context, selectedBitmap!!)
-                            val uri = android.net.Uri.fromFile(java.io.File(path))
-                            val success = searchWithGoogleLens(uri, context)
-                            if (success) {
-                                onClose()
-                                return@LaunchedEffect
-                            }
-                        }
-
-                        scope.launch { scaffoldState.bottomSheetState.expand() }
-
-                        if (hostedImageUrl == null) {
-                            val url = ImageSearchUploader.uploadToImageHost(selectedBitmap!!)
-                            if (url != null) {
-                                hostedImageUrl = url
-                            } else {
-                                isLoading = false
-                                return@LaunchedEffect
-                            }
-                        }
-
-                        searchEngines.forEach { engine ->
-                            if (!preloadedUrls.containsKey(engine)) {
-                                val url = if (engine.isDirectUpload) {
-                                     when (engine) {
-                                        SearchEngine.Perplexity -> ImageSearchUploader.getPerplexityUrl(hostedImageUrl!!)
-                                        SearchEngine.ChatGPT -> ImageSearchUploader.getChatGPTUrl(hostedImageUrl!!)
-                                        else -> null
-                                    }
-                                } else {
-                                     when (engine) {
-                                        SearchEngine.Google -> ImageSearchUploader.getGoogleLensUrl(hostedImageUrl!!)
-                                        SearchEngine.Bing -> ImageSearchUploader.getBingUrl(hostedImageUrl!!)
-                                        SearchEngine.Yandex -> ImageSearchUploader.getYandexUrl(hostedImageUrl!!)
-                                        SearchEngine.TinEye -> ImageSearchUploader.getTinEyeUrl(hostedImageUrl!!)
-                                        else -> null
-                                    }
-                                }
-                                if (url != null) preloadedUrls[engine] = url
-                            }
-                        }
-
-                        if (preloadedUrls.containsKey(selectedEngine)) {
-                             searchUrl = preloadedUrls[selectedEngine]
-                        }
-                        
-                        if (!initializedEngines.contains(selectedEngine)) {
-                            initializedEngines.add(selectedEngine)
-                        }
-                        
-                        isLoading = false
-                    }
-                }
-                
-                LaunchedEffect(selectedEngine, preloadedUrls) {
-                    if (preloadedUrls.containsKey(selectedEngine)) {
-                        searchUrl = preloadedUrls[selectedEngine]
-                    }
-                }
-
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (isLoading || (preloadedUrls.containsKey(selectedEngine) && !webViews.containsKey(selectedEngine))) {
-                        var showLoader by remember { mutableStateOf(false) }
-                        LaunchedEffect(Unit) {
-                            delay(100)
-                            showLoader = true
-                        }
-                        if (showLoader || isLoading) {
-                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                ContainedLoadingIndicatorSample()
-                             }
-                        }
-                    }
-
-                    DisposableEffect(Unit) {
-                        onDispose {
-                            webViews.values.forEach { it.destroy() }
-                            webViews.clear()
-                        }
-                    }
-
-                    searchEngines.forEach { engine ->
-                         if (initializedEngines.contains(engine) && preloadedUrls.containsKey(engine)) {
-                             val url = preloadedUrls[engine]!!
-                             val isSelected = (engine == selectedEngine)
-                             
-                             key(engine) {
-                                AndroidView(
-                                    factory = { ctx ->
-                                        if (webViews.containsKey(engine)) {
-                                            val v = webViews[engine]!!
-                                            (v.parent as? ViewGroup)?.removeView(v)
-                                            val swipeRefresh = SwipeRefreshLayout(ctx).apply {
-                                                layoutParams = ViewGroup.LayoutParams(
-                                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                                    ViewGroup.LayoutParams.MATCH_PARENT
-                                                )
-                                            }
-                                            swipeRefresh.addView(v)
-                                            swipeRefresh.setOnRefreshListener {
-                                                v.reload()
-                                                swipeRefresh.isRefreshing = false
-                                            }
-                                            swipeRefresh
-                                        } else {
-                                            val swipeRefresh = SwipeRefreshLayout(ctx).apply {
-                                                layoutParams = ViewGroup.LayoutParams(
-                                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                                    ViewGroup.LayoutParams.MATCH_PARENT
-                                                )
-                                            }
-                                            val webView = createWebView(ctx, engine)
-                                            webViews[engine] = webView
-                                            webView.loadUrl(url)
-                                            swipeRefresh.addView(webView)
-                                            swipeRefresh.setOnRefreshListener {
-                                                webView.reload()
-                                                swipeRefresh.isRefreshing = false
-                                            }
-                                            swipeRefresh
-                                        }
-                                    },
-                                    update = { swipeRefresh ->
-                                        var webView: WebView? = null
-                                        for (i in 0 until swipeRefresh.childCount) {
-                                            val child = swipeRefresh.getChildAt(i)
-                                            if (child is WebView) {
-                                                webView = child
-                                                break
-                                            }
-                                        }
-                                        if (webView != null) {
-                                            if (webView.url != url && url != webView.originalUrl) {
-                                                webView.loadUrl(url)
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .zIndex(if (isSelected) 1f else 0f)
-                                        .graphicsLayer { 
-                                            alpha = if (isSelected) 1f else 0f 
-                                        }
-                                )
-                             }
-                        }
-                    }
-                }
-            }
+                },
+                createWebView = ::createWebView
+            )
         }
     ) { _ ->
+        // Root Box
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black)
         ) {
+            // Friendly Message Overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -598,6 +348,7 @@ fun CircleToSearchScreen(
                 )
             }
 
+            // Screenshot and Tint
             if (screenshot != null) {
                 Box(
                     modifier = Modifier.fillMaxSize()
@@ -620,6 +371,7 @@ fun CircleToSearchScreen(
                 }
             }
 
+            // Gradient Border
             if (showGradientBorder) {
                 Box(
                     modifier = Modifier
@@ -633,346 +385,167 @@ fun CircleToSearchScreen(
                 )
             }
 
-            // 3. Drawing Canvas (Interactive Layer)
-            Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(isTextSelectionMode) {
-                        if (isTextSelectionMode) {
-                            detectTapGestures { offset ->
-                                // Check if tap hits any text node
-                                val tappedNode = textNodes.find { node ->
-                                    node.bounds.contains(offset.x.toInt(), offset.y.toInt())
-                                }
-                                
-                                if (tappedNode != null) {
-                                    showTextDialog = tappedNode.text
-                                }
-                            }
-                        } else {
-                            detectDragGestures(
-                                onDragStart = { offset ->
-                                    currentPathPoints.clear()
-                                    currentPathPoints.add(offset)
-                                    selectionRect = null
-                                    scope.launch { selectionAnim.snapTo(0f) }
-                                },
-                                onDrag = { change, _ ->
-                                    val offset = change.position
-                                    currentPathPoints.add(offset)
-                                },
-                                onDragEnd = {
-                                    if (currentPathPoints.isNotEmpty()) {
-                                        var minX = Float.MAX_VALUE
-                                        var minY = Float.MAX_VALUE
-                                        var maxX = Float.MIN_VALUE
-                                        var maxY = Float.MIN_VALUE
+            // Search Overlay (Canvas)
+            SearchOverlay(
+                isTextSelectionMode = isTextSelectionMode,
+                textNodes = textNodes,
+                onTextSelected = { text ->
+                    showTextDialog = text
+                },
+                onSelectionComplete = { rect ->
+                    selectedBitmap = ImageUtils.cropBitmap(screenshot!!, rect)
+                    isSearching = true
+                },
+                onResetSelection = {
+                    selectedBitmap = null
+                    isSearching = false
+                }
+            )
 
-                                        currentPathPoints.forEach { p ->
-                                            minX = min(minX, p.x)
-                                            minY = min(minY, p.y)
-                                            maxX = max(maxX, p.x)
-                                            maxY = max(maxY, p.y)
-                                        }
-                                        
-                                        val rect = Rect(minX.toInt(), minY.toInt(), maxX.toInt(), maxY.toInt())
-                                        selectionRect = rect
-                                        currentPathPoints.clear() 
-                                        
-                                        scope.launch {
-                                            selectionAnim.animateTo(1f, animationSpec = tween(600))
-                                            selectedBitmap = ImageUtils.cropBitmap(screenshot!!, rect)
-                                            isSearching = true
-                                        }
-                                    }
-                                }
-                            )
+            // Top Control Bar
+            TopControlBar(
+                selectedEngine = selectedEngine,
+                desktopModeEngines = desktopModeEngines,
+                isDarkMode = isDarkMode,
+                showGradientBorder = showGradientBorder,
+                searchUrl = searchUrl,
+                currentUrl = webViews[selectedEngine]?.url,
+                onClose = onClose,
+                onToggleDesktopMode = {
+                    val newSet = desktopModeEngines.toMutableSet()
+                    if (newSet.contains(selectedEngine)) newSet.remove(selectedEngine) else newSet.add(selectedEngine)
+                    desktopModeEngines = newSet
+                },
+                onToggleDarkMode = { isDarkMode = !isDarkMode },
+                onToggleGradientBorder = { showGradientBorder = !showGradientBorder },
+                onRefresh = { webViews[selectedEngine]?.reload() },
+                onCopyUrl = {
+                    if (searchUrl != null) {
+                        val clip = android.content.ClipData.newPlainText("Search URL", searchUrl)
+                        clipboardManager.setText(AnnotatedString(searchUrl!!))
+                    }
+                },
+                onOpenInBrowser = {
+                    val currentUrl = webViews[selectedEngine]?.url ?: searchUrl
+                    if (currentUrl != null) {
+                        try {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(currentUrl))
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            android.util.Log.e("CircleToSearch", "Failed to open browser", e)
                         }
                     }
-            ) {
-                // Draw Text Selection Boxes
-                if (isTextSelectionMode) {
-                    textNodes.forEach { node ->
-                        drawRect(
-                            color = Color.White.copy(alpha = 0.3f),
-                            topLeft = Offset(node.bounds.left.toFloat(), node.bounds.top.toFloat()),
-                            size = Size(node.bounds.width().toFloat(), node.bounds.height().toFloat()),
-                            style = androidx.compose.ui.graphics.drawscope.Fill
-                        )
-                        drawRect(
-                            color = Color.White,
-                            topLeft = Offset(node.bounds.left.toFloat(), node.bounds.top.toFloat()),
-                            size = Size(node.bounds.width().toFloat(), node.bounds.height().toFloat()),
-                            style = Stroke(width = 2f)
-                        )
-                    }
-                }
+                },
+                onOpenSettings = { showSettingsScreen = true },
+                context = context
+            )
 
-                if (!isTextSelectionMode && currentPathPoints.size > 1) {
-                    val path = Path().apply {
-                        moveTo(currentPathPoints.first().x, currentPathPoints.first().y)
-                        for (i in 1 until currentPathPoints.size) {
-                            lineTo(currentPathPoints[i].x, currentPathPoints[i].y)
-                        }
-                    }
-                    drawPath(
-                        path = path,
-                        brush = Brush.linearGradient(OverlayGradientColors),
-                        style = Stroke(width = 30f, cap = StrokeCap.Round, join = StrokeJoin.Round),
-                        alpha = 0.6f
-                    )
-                    drawPath(
-                        path = path,
-                        color = Color.White,
-                        style = Stroke(width = 12f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-                    )
-                }
-
-                if (selectionRect != null && selectionAnim.value > 0f) {
-                    val rect = selectionRect!!
-                    val progress = selectionAnim.value
-                    val left = rect.left.toFloat()
-                    val top = rect.top.toFloat()
-                    val right = rect.right.toFloat()
-                    val bottom = rect.bottom.toFloat()
-                    val width = right - left
-                    val height = bottom - top
-                    val cornerRadius = 64f
-                    val armLength = min(width, height) * 0.2f
-
-                    val tlPath = Path().apply {
-                        moveTo(left, top + armLength)
-                        lineTo(left, top + cornerRadius)
-                        arcTo(androidx.compose.ui.geometry.Rect(left, top, left + 2 * cornerRadius, top + 2 * cornerRadius), 180f, 90f, false)
-                        lineTo(left + armLength, top)
-                    }
-                    val trPath = Path().apply {
-                        moveTo(right - armLength, top)
-                        lineTo(right - cornerRadius, top)
-                        arcTo(androidx.compose.ui.geometry.Rect(right - 2 * cornerRadius, top, right, top + 2 * cornerRadius), 270f, 90f, false)
-                        lineTo(right, top + armLength)
-                    }
-                    val brPath = Path().apply {
-                        moveTo(right, bottom - armLength)
-                        lineTo(right, bottom - cornerRadius)
-                        arcTo(androidx.compose.ui.geometry.Rect(right - 2 * cornerRadius, bottom - 2 * cornerRadius, right, bottom), 0f, 90f, false)
-                        lineTo(right - armLength, bottom)
-                    }
-                    val blPath = Path().apply {
-                        moveTo(left + armLength, bottom)
-                        lineTo(left + cornerRadius, bottom)
-                        arcTo(androidx.compose.ui.geometry.Rect(left, bottom - 2 * cornerRadius, left + 2 * cornerRadius, bottom), 90f, 90f, false)
-                        lineTo(left, bottom - armLength)
-                    }
-
-                    val bracketStroke = Stroke(width = 12f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-                    listOf(tlPath, trPath, brPath, blPath).forEach { p ->
-                        drawPath(p, Color.White, style = bracketStroke, alpha = progress)
-                        drawPath(p, Brush.linearGradient(OverlayGradientColors), style = Stroke(width = 20f, cap = StrokeCap.Round), alpha = progress * 0.5f)
-                    }
-                     drawRoundRect(
-                        color = Color.White,
-                        topLeft = Offset(left, top),
-                        size = Size(width, height),
-                        cornerRadius = CornerRadius(32f),
-                        style = Stroke(width = 4f),
-                        alpha = (1f - progress) * 0.5f
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(top = 16.dp, start = 16.dp, end = 16.dp)
-                    .align(Alignment.TopCenter),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onClose,
-                    modifier = Modifier
-                        .background(Color.Gray.copy(alpha = 0.5f), CircleShape)
-                        .size(40.dp)
-                ) {
-                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = selectedEngine.name,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                
-                Box(
-                    modifier = Modifier
-                        .background(Color.Gray.copy(alpha = 0.5f), CircleShape)
-                        .size(40.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    var showMenu by remember { mutableStateOf(false) }
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
-                    }
-                
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        val isDesktop = isDesktop(selectedEngine)
-                        DropdownMenuItem(
-                            text = { Text(if (isDesktop) "Mobile Mode" else "Desktop Mode") },
-                            leadingIcon = { Icon(if (isDesktop) Icons.Default.Smartphone else Icons.Default.DesktopWindows, null) },
-                            onClick = { 
-                                val newSet = desktopModeEngines.toMutableSet()
-                                if (newSet.contains(selectedEngine)) newSet.remove(selectedEngine) else newSet.add(selectedEngine)
-                                desktopModeEngines = newSet
-                                showMenu = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(if (isDarkMode) "Light Mode" else "Dark Mode") },
-                            leadingIcon = { Icon(if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode, null) },
-                            onClick = { isDarkMode = !isDarkMode; showMenu = false }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(if (showGradientBorder) "Hide Border" else "Show Border") },
-                            leadingIcon = { Icon(Icons.Default.BorderOuter, null) },
-                            onClick = { showGradientBorder = !showGradientBorder; showMenu = false }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Refresh") },
-                            leadingIcon = { Icon(Icons.Default.Refresh, null) },
-                            onClick = { webViews[selectedEngine]?.reload(); showMenu = false }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Copy URL") },
-                            leadingIcon = { Icon(Icons.Default.ContentCopy, null) },
-                            onClick = {
-                                if (searchUrl != null) {
-                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                    val clip = android.content.ClipData.newPlainText("Search URL", searchUrl)
-                                    clipboard.setPrimaryClip(clip)
-                                }
-                                showMenu = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Open in Browser") },
-                            leadingIcon = { Icon(Icons.Default.OpenInNew, null) },
-                            onClick = {
-                                val currentUrl = webViews[selectedEngine]?.url ?: searchUrl
-                                if (currentUrl != null) {
-                                    try {
-                                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(currentUrl))
-                                        context.startActivity(intent)
-                                    } catch (e: Exception) {
-                                        android.util.Log.e("CircleToSearch", "Failed to open browser", e)
-                                    }
-                                }
-                                showMenu = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Settings") },
-                            leadingIcon = { Icon(Icons.Default.Settings, null) },
-                            onClick = { showSettingsScreen = true; showMenu = false }
-                        )
-                    }
-                }
-            }
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .navigationBarsPadding()
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 24.dp)
-                    .shadow(8.dp, CircleShape)
-                    .background(Color(0xFF1F1F1F), CircleShape)
-                    .height(64.dp)
-                    .padding(horizontal = 20.dp)
-                    .pointerInput(Unit) {
-                        detectTapGestures {
-                            if (!uiPreferences.isUseGoogleLensOnly() && selectedBitmap != null) {
-                                scope.launch { scaffoldState.bottomSheetState.expand() }
-                            }
-                        }
-                    }
-            ) {
-                Row(
-                    modifier = Modifier.align(Alignment.CenterStart),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (selectedBitmap != null) {
-                        Image(
-                            bitmap = selectedBitmap!!.asImageBitmap(),
-                            contentDescription = "Selected",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
-                        )
-                    } else {
-                        // G Logo
-                        Row {
-                            Text("G", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFF4285F4)))
-                            Text("o", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFFEA4335)))
-                            Text("o", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFFFBBC05)))
-                            Text("g", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFF4285F4)))
-                            Text("l", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFF34A853)))
-                            Text("e", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFFEA4335)))
-                        }
-                    }
-                }
-                
-                // Action Buttons (Right)
-                Row(
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Select Text Button
-                    IconButton(onClick = { 
+            // Bottom Control Bar
+            Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                BottomControlBar(
+                    selectedBitmap = selectedBitmap,
+                    isTextSelectionMode = isTextSelectionMode,
+                    isLensOnlyMode = uiPreferences.isUseGoogleLensOnly(),
+                    onExpandSheet = { scope.launch { scaffoldState.bottomSheetState.expand() } },
+                    onToggleTextSelection = {
                         isTextSelectionMode = !isTextSelectionMode
                         if (isTextSelectionMode) {
                             Toast.makeText(context, "Text Selection Mode On", Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(context, "Text Selection Mode Off", Toast.LENGTH_SHORT).show()
                         }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.TextFormat,
-                            contentDescription = "Select Text",
-                            tint = if (isTextSelectionMode) MaterialTheme.colorScheme.primary else Color.White
-                        )
+                    },
+                    onGoogleLensClick = {
+                        if (screenshot != null) {
+                            scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                val path = ImageUtils.saveBitmap(context, screenshot)
+                                val uri = android.net.Uri.fromFile(File(path))
+                                searchWithGoogleLens(uri, context)
+                            }
+                            onClose()
+                        }
+                    }
+                )
+            }
+
+            // Logic Effects
+            
+            // Reset everything when bitmap changes (new area selected)
+            LaunchedEffect(selectedBitmap) {
+                hostedImageUrl = null
+                searchUrl = null
+                preloadedUrls.clear()
+                initializedEngines.clear()
+                webViews.values.forEach { it.destroy() }
+                webViews.clear()
+            }
+
+            LaunchedEffect(selectedBitmap, hostedImageUrl) {
+                if (selectedBitmap != null) {
+                    isLoading = true
+                    
+                    if (uiPreferences.isUseGoogleLensOnly()) {
+                        val path = ImageUtils.saveBitmap(context, selectedBitmap!!)
+                        val uri = android.net.Uri.fromFile(File(path))
+                        val success = searchWithGoogleLens(uri, context)
+                        if (success) {
+                            onClose()
+                            return@LaunchedEffect
+                        }
+                    }
+
+                    scope.launch { scaffoldState.bottomSheetState.expand() }
+
+                    if (hostedImageUrl == null) {
+                        val url = ImageSearchUploader.uploadToImageHost(selectedBitmap!!)
+                        if (url != null) {
+                            hostedImageUrl = url
+                        } else {
+                            isLoading = false
+                            return@LaunchedEffect
+                        }
+                    }
+
+                    searchEngines.forEach { engine ->
+                        if (!preloadedUrls.containsKey(engine)) {
+                            val url = if (engine.isDirectUpload) {
+                                 when (engine) {
+                                    SearchEngine.Perplexity -> ImageSearchUploader.getPerplexityUrl(hostedImageUrl!!)
+                                    SearchEngine.ChatGPT -> ImageSearchUploader.getChatGPTUrl(hostedImageUrl!!)
+                                    else -> null
+                                }
+                            } else {
+                                 when (engine) {
+                                    SearchEngine.Google -> ImageSearchUploader.getGoogleLensUrl(hostedImageUrl!!)
+                                    SearchEngine.Bing -> ImageSearchUploader.getBingUrl(hostedImageUrl!!)
+                                    SearchEngine.Yandex -> ImageSearchUploader.getYandexUrl(hostedImageUrl!!)
+                                    SearchEngine.TinEye -> ImageSearchUploader.getTinEyeUrl(hostedImageUrl!!)
+                                    else -> null
+                                }
+                            }
+                            if (url != null) preloadedUrls[engine] = url
+                        }
+                    }
+
+                    if (preloadedUrls.containsKey(selectedEngine)) {
+                         searchUrl = preloadedUrls[selectedEngine]
                     }
                     
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    // Google Lens Button (Full Screenshot)
-                    IconButton(onClick = {
-                        if (screenshot != null) {
-                             scope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                                 val path = ImageUtils.saveBitmap(context, screenshot)
-                                 val uri = android.net.Uri.fromFile(java.io.File(path))
-                                 searchWithGoogleLens(uri, context)
-                             }
-                             onClose()
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.CameraAlt,
-                            contentDescription = "Google Lens",
-                            tint = Color.White
-                        )
+                    if (!initializedEngines.contains(selectedEngine)) {
+                        initializedEngines.add(selectedEngine)
                     }
+                    
+                    isLoading = false
+                }
+            }
+            
+            LaunchedEffect(selectedEngine, preloadedUrls) {
+                if (preloadedUrls.containsKey(selectedEngine)) {
+                    searchUrl = preloadedUrls[selectedEngine]
                 }
             }
 
+            // Dialogs
             if (showSettingsScreen) {
                 SettingsScreen(
                     uiPreferences = uiPreferences,
