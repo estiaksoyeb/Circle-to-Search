@@ -19,19 +19,14 @@
 
 package com.akslabs.circletosearch.ui
 
-import com.akslabs.circletosearch.utils.FriendlyMessageManager
-import com.akslabs.circletosearch.ui.components.FriendlyMessageBubble
-import com.akslabs.circletosearch.utils.UIPreferences
-import kotlinx.coroutines.delay
-
 import android.graphics.Bitmap
 import android.graphics.Rect
-import android.util.Base64
+import android.view.ViewGroup
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.webkit.WebSettings
-import android.widget.FrameLayout
-import android.view.ViewGroup
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -40,67 +35,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material.icons.filled.DesktopWindows
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.BorderOuter
-import androidx.compose.material.icons.filled.Translate
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material.icons.filled.TravelExplore
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -108,35 +49,27 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.zIndex
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.akslabs.circletosearch.data.SearchEngine
+import com.akslabs.circletosearch.data.isDirectUpload
+import com.akslabs.circletosearch.ui.components.FriendlyMessageBubble
+import com.akslabs.circletosearch.ui.components.searchWithGoogleLens
 import com.akslabs.circletosearch.ui.theme.OverlayGradientColors
+import com.akslabs.circletosearch.utils.FriendlyMessageManager
 import com.akslabs.circletosearch.utils.ImageSearchUploader
 import com.akslabs.circletosearch.utils.ImageUtils
-import com.akslabs.circletosearch.ui.components.searchWithGoogleLens
+import com.akslabs.circletosearch.utils.UIPreferences
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.animateFloat
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.webkit.WebSettingsCompat
-import androidx.webkit.WebViewFeature
-import com.akslabs.circletosearch.data.isDirectUpload
 import kotlin.math.max
 import kotlin.math.min
 
@@ -194,7 +127,6 @@ fun CircleToSearchScreen(
     var isLoading by remember { mutableStateOf(false) }
     
     // Desktop Mode - Per Tab
-    // We use a set to track which engines are in desktop mode
     val initialDesktopMode = uiPreferences.isDesktopMode() // Global default
     var desktopModeEngines by remember { mutableStateOf<Set<SearchEngine>>(if(initialDesktopMode) searchEngines.toSet() else emptySet()) }
     
@@ -204,16 +136,7 @@ fun CircleToSearchScreen(
     // Track initialized engines for Smart Loading
     val initializedEngines = remember { mutableStateListOf<SearchEngine>() }
     
-    // Save global preference if user toggles it for the MAIN engine (Google) - Optional choice, 
-    // or we just keep it per session. Let's keep it simple: no auto-save of per-tab state to verify complex persistence yet.
-    // simpler: If user toggles, we just update the state.
-    
-    // Helper to check desktop mode
     fun isDesktop(engine: SearchEngine) = desktopModeEngines.contains(engine)
-    
-    // Removed auto-save of isDesktopMode for now as it is complex with per-tab
-    // We could save "If ALL are desktop" or just the active one? 
-    // User requested "depending on opened tab", so per-session state is safer.
     
     LaunchedEffect(isDarkMode) {
         uiPreferences.setDarkMode(isDarkMode)
@@ -223,15 +146,12 @@ fun CircleToSearchScreen(
         uiPreferences.setShowGradientBorder(showGradientBorder)
     }
     
-    // Cache for preloaded URLs to avoid re-uploading/re-generating
+    // Cache for preloaded URLs
     val preloadedUrls = remember { mutableMapOf<SearchEngine, String>() }
     
     // WebView Cache
     val webViews = remember { mutableMapOf<SearchEngine, WebView>() }
     
-    // Update User Agent dynamically when desktop mode changes for a specific engine
-    // This is now handled in the AndroidView update block or individual engine effects
-    // BUT we need to force reload if the state changes.
     LaunchedEffect(desktopModeEngines) {
         webViews.forEach { (engine, wv) ->
              val isDesktop = desktopModeEngines.contains(engine)
@@ -244,19 +164,16 @@ fun CircleToSearchScreen(
             if (wv.settings.userAgentString != newUserAgent) {
                 wv.settings.userAgentString = newUserAgent
                 wv.reload()
-                android.util.Log.d("CircleToSearch", "Desktop mode changed for $engine - Reloaded")
             }
         }
     }
     
-    // Update WebViews when dark mode changes
     LaunchedEffect(isDarkMode) {
         webViews.values.forEach { wv ->
             try {
-                // Update WebViewClient for dark mode
                 if (isDarkMode) {
-                    wv.webViewClient = object : android.webkit.WebViewClient() {
-                        override fun onPageFinished(view: android.webkit.WebView?, url: String?) {
+                    wv.webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView?, url: String?) {
                             super.onPageFinished(view, url)
                             val darkModeCSS = """
                                 javascript:(function() {
@@ -272,20 +189,18 @@ fun CircleToSearchScreen(
                         }
                     }
                 } else {
-                    wv.webViewClient = android.webkit.WebViewClient()
+                    wv.webViewClient = WebViewClient()
                 }
                 wv.reload()
-                android.util.Log.d("CircleToSearch", "Dark mode changed to: $isDarkMode - Reloaded WebViews")
             } catch (e: Exception) {
                 android.util.Log.e("CircleToSearch", "Error updating dark mode", e)
             }
         }
     }
     
-    // Bottom Sheet State
-    val scaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(
-        bottomSheetState = androidx.compose.material3.rememberStandardBottomSheetState(
-            initialValue = androidx.compose.material3.SheetValue.Hidden,
+    val scaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(
+            initialValue = SheetValue.Hidden,
             skipHiddenState = false
         )
     )
@@ -299,9 +214,6 @@ fun CircleToSearchScreen(
     var selectionRect by remember { mutableStateOf<Rect?>(null) }
     val selectionAnim = remember { androidx.compose.animation.core.Animatable(0f) }
     
-    // searchEngines moved to top
-    // val searchEngines = SearchEngine.values()
-
     // Gradient Animation
     val alphaAnim by animateFloatAsState(
         targetValue = if (screenshot != null) 1f else 0f,
@@ -316,7 +228,6 @@ fun CircleToSearchScreen(
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
             
-            // Caching & Performance - must be set on WebView directly
             setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
             
             settings.apply {
@@ -328,18 +239,11 @@ fun CircleToSearchScreen(
                 allowFileAccessFromFileURLs = true
                 allowUniversalAccessFromFileURLs = true
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                
-                // Performance & UI
                 setRenderPriority(WebSettings.RenderPriority.HIGH)
-                
-                // Caching for Speed
-                cacheMode = WebSettings.LOAD_DEFAULT // Was LOAD_CACHE_ELSE_NETWORK - caused refresh issues
-                
-                // Zoom support
+                cacheMode = WebSettings.LOAD_DEFAULT
                 setSupportZoom(true)
                 builtInZoomControls = true
                 displayZoomControls = false
-                
                 useWideViewPort = true
                 loadWithOverviewMode = true
                 
@@ -348,24 +252,15 @@ fun CircleToSearchScreen(
                 } else {
                     "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 }
-                
-                // Dark Mode - Use CSS injection for universal compatibility
-                // Algorithmic darkening alone doesn't work on many websites
-                android.util.Log.d("CircleToSearch", "Dark mode enabled: $isDarkMode")
             }
             
-            // UI Tweaks
             isVerticalScrollBarEnabled = false
             isHorizontalScrollBarEnabled = false
-
-            // Enable Third-Party Cookies
             android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
 
             webViewClient = object : WebViewClient() {
-                
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
-                    // Inject dark mode CSS if enabled
                     if (isDarkMode) {
                         val darkModeCSS = """
                             javascript:(function() {
@@ -378,7 +273,6 @@ fun CircleToSearchScreen(
                             })()
                         """.trimIndent()
                         view?.loadUrl(darkModeCSS)
-                        android.util.Log.d("CircleToSearch", "Dark mode CSS injected for: $url")
                     }
                 }
             }
@@ -402,18 +296,18 @@ fun CircleToSearchScreen(
         val currentWebView = webViews[selectedEngine]
         if (currentWebView != null && currentWebView.canGoBack()) {
             currentWebView.goBack()
-        } else if (scaffoldState.bottomSheetState.currentValue == androidx.compose.material3.SheetValue.Expanded) {
+        } else if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
              scope.launch { scaffoldState.bottomSheetState.partialExpand() }
-        } else if (scaffoldState.bottomSheetState.currentValue == androidx.compose.material3.SheetValue.PartiallyExpanded) {
+        } else if (scaffoldState.bottomSheetState.currentValue == SheetValue.PartiallyExpanded) {
              scope.launch { scaffoldState.bottomSheetState.hide() }
         } else {
             onClose()
         }
     }
 
-    androidx.compose.material3.BottomSheetScaffold(
+    BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = (androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp * 0.55f), // Dynamic 55% peek
+        sheetPeekHeight = (androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp * 0.55f),
         sheetContainerColor = Color(0xFF1F1F1F),
         sheetContentColor = MaterialTheme.colorScheme.onSurface,
         sheetDragHandle = { 
@@ -425,7 +319,6 @@ fun CircleToSearchScreen(
         },
         sheetSwipeEnabled = true,
         sheetContent = {
-            // Bottom Sheet Content (Results)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -434,7 +327,6 @@ fun CircleToSearchScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Tabs - Polished UI
                 ScrollableTabRow(
                     selectedTabIndex = searchEngines.indexOf(selectedEngine),
                     edgePadding = 16.dp,
@@ -448,15 +340,6 @@ fun CircleToSearchScreen(
                         val transition = androidx.compose.animation.core.updateTransition(targetState = selected, label = "TabSelect")
                         val scale by transition.animateFloat(label = "Scale") { if (it) 1.02f else 1f }
                         val alpha by transition.animateFloat(label = "Alpha") { if (it) 1f else 0.7f }
-
-import androidx.compose.material.icons.filled.TravelExplore
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Search
-
-// ... inside CircleToSearchScreen ...
 
                         Tab(
                             selected = selected,
@@ -504,27 +387,12 @@ import androidx.compose.material.icons.filled.Search
                     }
                 }
 
-// ... helper function at bottom of file ...
-
-fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.ImageVector {
-    return when (engine) {
-        SearchEngine.Google -> Icons.Default.Search
-        SearchEngine.Bing -> Icons.Default.TravelExplore
-        SearchEngine.Yandex -> Icons.Default.Language
-        SearchEngine.TinEye -> Icons.Default.Visibility
-        SearchEngine.Perplexity -> Icons.Default.Psychology
-        SearchEngine.ChatGPT -> Icons.Default.Chat
-    }
-}
-
-                // Reset everything when bitmap changes (new area selected)
+                // Reset everything when bitmap changes
                 LaunchedEffect(selectedBitmap) {
                     hostedImageUrl = null
                     searchUrl = null
                     preloadedUrls.clear()
-                    initializedEngines.clear() // Reset smart loading
-                    // Do NOT destroy webviews here to keep them cached if possible? 
-                    // PROBABLY safer to destroy to avoid stale state from previous searches.
+                    initializedEngines.clear()
                     webViews.values.forEach { it.destroy() }
                     webViews.clear()
                 }
@@ -533,29 +401,18 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                     if (selectedBitmap != null) {
                         isLoading = true
                         
-                        // 1. Google Lens Only Mode Check
                         if (uiPreferences.isUseGoogleLensOnly()) {
-                            // Save to cache and launch Lens
                             val path = ImageUtils.saveBitmap(context, selectedBitmap!!)
                             val uri = android.net.Uri.fromFile(java.io.File(path))
-                            
-                            // Prepare content URI for Lens (using existing FileProvider logic in helper)
                             val success = searchWithGoogleLens(uri, context)
-                            
                             if (success) {
-                                // Close the overlay since Lens is taking over
                                 onClose()
                                 return@LaunchedEffect
-                            } else {
-                                // Fallback to multi-search if Lens failed
-                                android.util.Log.e("CircleToSearch", "Google Lens launch failed, falling back to multi-search")
                             }
                         }
 
-                        // 2. Multi-Search Mode (Expanded UI)
                         scope.launch { scaffoldState.bottomSheetState.expand() }
 
-                        // 3. Upload to host if needed (Multi-Search Mode)
                         if (hostedImageUrl == null) {
                             val url = ImageSearchUploader.uploadToImageHost(selectedBitmap!!)
                             if (url != null) {
@@ -566,7 +423,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                             }
                         }
 
-                        // 2. Generate URLs for ALL engines (lightweight string op)
                         searchEngines.forEach { engine ->
                             if (!preloadedUrls.containsKey(engine)) {
                                 val url = if (engine.isDirectUpload) {
@@ -588,48 +444,31 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                             }
                         }
 
-                        // 3. Set initial URL
                         if (preloadedUrls.containsKey(selectedEngine)) {
                              searchUrl = preloadedUrls[selectedEngine]
                         }
                         
-                        // 4. SMART LOADING SEQUENCE (Lazy)
-                        // First, ensure selected engine is initialized
                         if (!initializedEngines.contains(selectedEngine)) {
                             initializedEngines.add(selectedEngine)
                         }
                         
                         isLoading = false
-                        // Background loading removed for performance. Engines load only when selected.
                     }
                 }
                 
-                // Update searchUrl when engine changes
                 LaunchedEffect(selectedEngine, preloadedUrls) {
                     if (preloadedUrls.containsKey(selectedEngine)) {
                         searchUrl = preloadedUrls[selectedEngine]
                     }
                 }
 
-                // Memory Optimization: REMOVED Aggressive Cleanup
-                // User Requirement: "dont refresh tabs when user switch tabs keep them in background"
-                // We keep them alive.
-                /* 
-                LaunchedEffect(selectedEngine) {
-                     // ... (Cleanup logic removed)
-                }
-                */
-
                 Box(modifier = Modifier.fillMaxSize()) {
-                    // Show loading only if the SELECTED engine isn't ready or just starting
                     if (isLoading || (preloadedUrls.containsKey(selectedEngine) && !webViews.containsKey(selectedEngine))) {
-                         // We delay showing the loader slightly to avoid flicker if WebView attaches instantly
                         var showLoader by remember { mutableStateOf(false) }
                         LaunchedEffect(Unit) {
-                            kotlinx.coroutines.delay(100)
+                            delay(100)
                             showLoader = true
                         }
-                        
                         if (showLoader || isLoading) {
                              Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 ContainedLoadingIndicatorSample()
@@ -637,8 +476,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                         }
                     }
 
-                    // Dynamic Settings Update (User Agent etc) - Now handled at top level
-                    // Cleanup on Dispose
                     DisposableEffect(Unit) {
                         onDispose {
                             webViews.values.forEach { it.destroy() }
@@ -646,22 +483,17 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                         }
                     }
 
-                    // Render WebViews
                     searchEngines.forEach { engine ->
-                         // Logic: Render if it's in the initialized set (Smart Loading)
-                         // This ensures we don't load everything at once, but once loaded, we keep it.
                          if (initializedEngines.contains(engine) && preloadedUrls.containsKey(engine)) {
                              val url = preloadedUrls[engine]!!
                              val isSelected = (engine == selectedEngine)
                              
-                             androidx.compose.runtime.key(engine) {
+                             key(engine) {
                                 AndroidView(
                                     factory = { ctx ->
                                         if (webViews.containsKey(engine)) {
-                                            // Should not happen with key(), but safety check
                                             val v = webViews[engine]!!
                                             (v.parent as? ViewGroup)?.removeView(v)
-                                            
                                             val swipeRefresh = SwipeRefreshLayout(ctx).apply {
                                                 layoutParams = ViewGroup.LayoutParams(
                                                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -682,14 +514,8 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                                                 )
                                             }
                                             val webView = createWebView(ctx, engine)
-                                            // Apply current settings
-                                             if (isDesktop(engine)) {
-                                                 webView.settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                                             }
-                                            
                                             webViews[engine] = webView
                                             webView.loadUrl(url)
-                                            
                                             swipeRefresh.addView(webView)
                                             swipeRefresh.setOnRefreshListener {
                                                 webView.reload()
@@ -707,7 +533,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                                                 break
                                             }
                                         }
-                                        
                                         if (webView != null) {
                                             if (webView.url != url && url != webView.originalUrl) {
                                                 webView.loadUrl(url)
@@ -728,19 +553,16 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
             }
         }
     ) { _ ->
-        // Root Box
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black)
-                .background(Color.Black)
         ) {
-            // Friendly Message Overlay (Top Center)
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .offset(y = 100.dp) // Offset to not cover potential top icons
-                    .zIndex(100f), // Ensure on top
+                    .offset(y = 100.dp)
+                    .zIndex(100f),
                 contentAlignment = Alignment.TopCenter
             ) {
                 FriendlyMessageBubble(
@@ -749,7 +571,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                 )
             }
 
-            // 1. Screenshot Layer
             if (screenshot != null) {
                 Box(
                     modifier = Modifier.fillMaxSize()
@@ -760,8 +581,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
-                    
-                    // Tint Overlay
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -774,7 +593,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                 }
             }
 
-            // 2. Gradient Border Layer (Overlaying screenshot, clipped to rounded corners)
             if (showGradientBorder) {
                 Box(
                     modifier = Modifier
@@ -782,20 +600,18 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                         .border(
                             width = 8.dp,
                             brush = Brush.verticalGradient(colors = OverlayGradientColors),
-                            shape = RoundedCornerShape(24.dp) // Rounded corners for device
+                            shape = RoundedCornerShape(24.dp)
                         )
                         .clip(RoundedCornerShape(24.dp))
                 )
             }
 
-            // 3. Drawing Canvas (Interactive Layer)
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDragStart = { offset ->
-                                // Clear previous state
                                 currentPathPoints.clear()
                                 currentPathPoints.add(offset)
                                 selectionRect = null
@@ -819,34 +635,20 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                                         maxY = max(maxY, p.y)
                                     }
                                     
-                                    val rect = Rect(
-                                        minX.toInt(),
-                                        minY.toInt(),
-                                        maxX.toInt(),
-                                        maxY.toInt()
-                                    )
-                                    
+                                    val rect = Rect(minX.toInt(), minY.toInt(), maxX.toInt(), maxY.toInt())
                                     selectionRect = rect
-                                    // Clear points to remove the drawn line and show the lens rect
                                     currentPathPoints.clear() 
                                     
                                     scope.launch {
-                                        selectionAnim.animateTo(
-                                            targetValue = 1f,
-                                            animationSpec = tween(600)
-                                        )
-                                        android.util.Log.d("CircleToSearch", "Selection rect: ${rect.left},${rect.top},${rect.right},${rect.bottom}")
+                                        selectionAnim.animateTo(1f, animationSpec = tween(600))
                                         selectedBitmap = ImageUtils.cropBitmap(screenshot!!, rect)
-                                        android.util.Log.d("CircleToSearch", "Cropped bitmap size: ${selectedBitmap!!.width}x${selectedBitmap!!.height}")
                                         isSearching = true
-                                        // Sheet expands automatically in LaunchedEffect
                                     }
                                 }
                             }
                         )
                     }
             ) {
-                // Draw current path (Real-time)
                 if (currentPathPoints.size > 1) {
                     val path = Path().apply {
                         moveTo(currentPathPoints.first().x, currentPathPoints.first().y)
@@ -854,15 +656,12 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                             lineTo(currentPathPoints[i].x, currentPathPoints[i].y)
                         }
                     }
-                    
-                    // Glow
                     drawPath(
                         path = path,
                         brush = Brush.linearGradient(OverlayGradientColors),
                         style = Stroke(width = 30f, cap = StrokeCap.Round, join = StrokeJoin.Round),
                         alpha = 0.6f
                     )
-                    // Core
                     drawPath(
                         path = path,
                         color = Color.White,
@@ -870,7 +669,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                     )
                 }
 
-                // Draw Lens Animation (Rounded Corner Brackets)
                 if (selectionRect != null && selectionAnim.value > 0f) {
                     val rect = selectionRect!!
                     val progress = selectionAnim.value
@@ -878,71 +676,41 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                     val top = rect.top.toFloat()
                     val right = rect.right.toFloat()
                     val bottom = rect.bottom.toFloat()
-                    
                     val width = right - left
                     val height = bottom - top
-                    val cornerRadius = 64f // Increased radius for rounder look
-                    val armLength = min(width, height) * 0.2f // Length of the straight part
+                    val cornerRadius = 64f
+                    val armLength = min(width, height) * 0.2f
 
-                    // Top Left
                     val tlPath = Path().apply {
                         moveTo(left, top + armLength)
                         lineTo(left, top + cornerRadius)
-                        arcTo(
-                            rect = androidx.compose.ui.geometry.Rect(left, top, left + 2 * cornerRadius, top + 2 * cornerRadius),
-                            startAngleDegrees = 180f,
-                            sweepAngleDegrees = 90f,
-                            forceMoveTo = false
-                        )
+                        arcTo(androidx.compose.ui.geometry.Rect(left, top, left + 2 * cornerRadius, top + 2 * cornerRadius), 180f, 90f, false)
                         lineTo(left + armLength, top)
                     }
-                    // Top Right
                     val trPath = Path().apply {
                         moveTo(right - armLength, top)
                         lineTo(right - cornerRadius, top)
-                        arcTo(
-                            rect = androidx.compose.ui.geometry.Rect(right - 2 * cornerRadius, top, right, top + 2 * cornerRadius),
-                            startAngleDegrees = 270f,
-                            sweepAngleDegrees = 90f,
-                            forceMoveTo = false
-                        )
+                        arcTo(androidx.compose.ui.geometry.Rect(right - 2 * cornerRadius, top, right, top + 2 * cornerRadius), 270f, 90f, false)
                         lineTo(right, top + armLength)
                     }
-                    // Bottom Right
                     val brPath = Path().apply {
                         moveTo(right, bottom - armLength)
                         lineTo(right, bottom - cornerRadius)
-                        arcTo(
-                            rect = androidx.compose.ui.geometry.Rect(right - 2 * cornerRadius, bottom - 2 * cornerRadius, right, bottom),
-                            startAngleDegrees = 0f,
-                            sweepAngleDegrees = 90f,
-                            forceMoveTo = false
-                        )
+                        arcTo(androidx.compose.ui.geometry.Rect(right - 2 * cornerRadius, bottom - 2 * cornerRadius, right, bottom), 0f, 90f, false)
                         lineTo(right - armLength, bottom)
                     }
-                    // Bottom Left
                     val blPath = Path().apply {
                         moveTo(left + armLength, bottom)
                         lineTo(left + cornerRadius, bottom)
-                        arcTo(
-                            rect = androidx.compose.ui.geometry.Rect(left, bottom - 2 * cornerRadius, left + 2 * cornerRadius, bottom),
-                            startAngleDegrees = 90f,
-                            sweepAngleDegrees = 90f,
-                            forceMoveTo = false
-                        )
+                        arcTo(androidx.compose.ui.geometry.Rect(left, bottom - 2 * cornerRadius, left + 2 * cornerRadius, bottom), 90f, 90f, false)
                         lineTo(left, bottom - armLength)
                     }
 
-                    val bracketAlpha = progress
                     val bracketStroke = Stroke(width = 12f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-                    
-                    // Draw Brackets with Glow
                     listOf(tlPath, trPath, brPath, blPath).forEach { p ->
-                        drawPath(p, Color.White, style = bracketStroke, alpha = bracketAlpha)
-                        drawPath(p, Brush.linearGradient(OverlayGradientColors), style = Stroke(width = 20f, cap = StrokeCap.Round), alpha = bracketAlpha * 0.5f)
+                        drawPath(p, Color.White, style = bracketStroke, alpha = progress)
+                        drawPath(p, Brush.linearGradient(OverlayGradientColors), style = Stroke(width = 20f, cap = StrokeCap.Round), alpha = progress * 0.5f)
                     }
-                    
-                    // Optional: Flash effect inside
                      drawRoundRect(
                         color = Color.White,
                         topLeft = Offset(left, top),
@@ -954,7 +722,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                 }
             }
 
-            // 4. Header (Top)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -981,7 +748,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 
-                // Action Button (Menu)
                 Box(
                     modifier = Modifier
                         .background(Color.Gray.copy(alpha = 0.5f), CircleShape)
@@ -993,68 +759,39 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                         Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
                     }
                 
-                    androidx.compose.material3.DropdownMenu(
+                    DropdownMenu(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
                         val isDesktop = isDesktop(selectedEngine)
-                        androidx.compose.material3.DropdownMenuItem(
+                        DropdownMenuItem(
                             text = { Text(if (isDesktop) "Mobile Mode" else "Desktop Mode") },
-                            leadingIcon = { 
-                                Icon(
-                                    if (isDesktop) Icons.Default.Smartphone else Icons.Default.DesktopWindows,
-                                    contentDescription = null
-                                )
-                            },
+                            leadingIcon = { Icon(if (isDesktop) Icons.Default.Smartphone else Icons.Default.DesktopWindows, null) },
                             onClick = { 
                                 val newSet = desktopModeEngines.toMutableSet()
-                                if (newSet.contains(selectedEngine)) {
-                                    newSet.remove(selectedEngine)
-                                } else {
-                                    newSet.add(selectedEngine)
-                                }
+                                if (newSet.contains(selectedEngine)) newSet.remove(selectedEngine) else newSet.add(selectedEngine)
                                 desktopModeEngines = newSet
                                 showMenu = false
                             }
                         )
-                        androidx.compose.material3.DropdownMenuItem(
+                        DropdownMenuItem(
                             text = { Text(if (isDarkMode) "Light Mode" else "Dark Mode") },
-                            leadingIcon = {
-                                Icon(
-                                    if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                                    contentDescription = null
-                                )
-                            },
-                            onClick = { 
-                                isDarkMode = !isDarkMode 
-                                showMenu = false
-                            }
+                            leadingIcon = { Icon(if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode, null) },
+                            onClick = { isDarkMode = !isDarkMode; showMenu = false }
                         )
-                        androidx.compose.material3.DropdownMenuItem(
+                        DropdownMenuItem(
                             text = { Text(if (showGradientBorder) "Hide Border" else "Show Border") },
-                            leadingIcon = {
-                                Icon(Icons.Default.BorderOuter, contentDescription = null)
-                            },
-                            onClick = { 
-                                showGradientBorder = !showGradientBorder 
-                                showMenu = false
-                            }
+                            leadingIcon = { Icon(Icons.Default.BorderOuter, null) },
+                            onClick = { showGradientBorder = !showGradientBorder; showMenu = false }
                         )
-                        androidx.compose.material3.DropdownMenuItem(
+                        DropdownMenuItem(
                             text = { Text("Refresh") },
-                            leadingIcon = {
-                                Icon(Icons.Default.Refresh, contentDescription = null)
-                            },
-                            onClick = { 
-                                webViews[selectedEngine]?.reload()
-                                showMenu = false
-                            }
+                            leadingIcon = { Icon(Icons.Default.Refresh, null) },
+                            onClick = { webViews[selectedEngine]?.reload(); showMenu = false }
                         )
-                        androidx.compose.material3.DropdownMenuItem(
+                        DropdownMenuItem(
                             text = { Text("Copy URL") },
-                            leadingIcon = {
-                                Icon(Icons.Default.ContentCopy, contentDescription = null)
-                            },
+                            leadingIcon = { Icon(Icons.Default.ContentCopy, null) },
                             onClick = {
                                 if (searchUrl != null) {
                                     val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
@@ -1064,11 +801,9 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                                 showMenu = false
                             }
                         )
-                        androidx.compose.material3.DropdownMenuItem(
+                        DropdownMenuItem(
                             text = { Text("Open in Browser") },
-                            leadingIcon = {
-                                Icon(Icons.Default.OpenInNew, contentDescription = null)
-                            },
+                            leadingIcon = { Icon(Icons.Default.OpenInNew, null) },
                             onClick = {
                                 val currentUrl = webViews[selectedEngine]?.url ?: searchUrl
                                 if (currentUrl != null) {
@@ -1082,19 +817,15 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                                 showMenu = false
                             }
                         )
-                        androidx.compose.material3.DropdownMenuItem(
+                        DropdownMenuItem(
                             text = { Text("Settings") },
-                            leadingIcon = {
-                                Icon(Icons.Default.Settings, contentDescription = null)
-                            },
-                            onClick = {
-                                showSettingsScreen = true
-                                showMenu = false
-                            }
+                            leadingIcon = { Icon(Icons.Default.Settings, null) },
+                            onClick = { showSettingsScreen = true; showMenu = false }
                         )
                     }
                 }
-            }      // 5. Search Bar / Pill (Bottom Fixed) - Clickable to open sheet
+            }
+
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -1107,11 +838,8 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                     .padding(horizontal = 20.dp)
                     .pointerInput(Unit) {
                         detectTapGestures {
-                            // Only expand if NOT Lens Only AND a bitmap is selected
                             if (!uiPreferences.isUseGoogleLensOnly() && selectedBitmap != null) {
-                                scope.launch { 
-                                    scaffoldState.bottomSheetState.expand()
-                                }
+                                scope.launch { scaffoldState.bottomSheetState.expand() }
                             }
                         }
                     }
@@ -1131,7 +859,6 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                                 .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
                         )
                     } else {
-                        // G Logo
                         Row {
                             Text("G", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFF4285F4)))
                             Text("o", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFFEA4335)))
@@ -1142,26 +869,21 @@ fun getEngineIcon(engine: SearchEngine): androidx.compose.ui.graphics.vector.Ima
                         }
                     }
                 }
-                
-
             }
 
-
-
-        if (showSettingsScreen) {
-            SettingsScreen(
-                uiPreferences = uiPreferences,
-                onDismissRequest = { showSettingsScreen = false }
-            )
+            if (showSettingsScreen) {
+                SettingsScreen(
+                    uiPreferences = uiPreferences,
+                    onDismissRequest = { showSettingsScreen = false }
+                )
+            }
         }
-
     }
-}
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @androidx.compose.ui.tooling.preview.Preview
-@androidx.compose.runtime.Composable
+@Composable
 fun ContainedLoadingIndicatorSample() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         androidx.compose.material3.ContainedLoadingIndicator()
