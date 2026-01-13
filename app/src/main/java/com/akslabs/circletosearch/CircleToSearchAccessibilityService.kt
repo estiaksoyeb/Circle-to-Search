@@ -29,6 +29,7 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.hardware.camera2.CameraManager
 import android.os.Build
 import android.os.VibrationEffect
@@ -40,11 +41,14 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import com.akslabs.circletosearch.data.ActionType
 import com.akslabs.circletosearch.data.BitmapRepository
 import com.akslabs.circletosearch.data.GestureType
 import com.akslabs.circletosearch.data.OverlayConfigurationManager
 import com.akslabs.circletosearch.data.OverlaySegment
+import com.akslabs.circletosearch.data.TextNode
+import com.akslabs.circletosearch.data.TextRepository
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -607,13 +611,6 @@ class CircleToSearchAccessibilityService : AccessibilityService() {
         }
     }
 
-import android.view.accessibility.AccessibilityNodeInfo
-import android.graphics.Rect
-import com.akslabs.circletosearch.data.TextNode
-import com.akslabs.circletosearch.data.TextRepository
-
-// ... inside CircleToSearchAccessibilityService class ...
-
     private fun performCapture() {
         android.util.Log.d("CircleToSearch", "performCapture called. hasWindowManager=${windowManager != null}")
         
@@ -623,45 +620,6 @@ import com.akslabs.circletosearch.data.TextRepository
         android.util.Log.d("CircleToSearch", "Scraped ${textNodes.size} text nodes")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // ... (rest of performCapture)
-    }
-
-    private fun scrapeScreenText(): List<TextNode> {
-        val nodes = mutableListOf<TextNode>()
-        val windows = windows
-        
-        for (window in windows) {
-            // Skip our own overlay window (type accessibility overlay) to avoid reading our own UI
-            // However, depending on timing, our overlay might not be there yet.
-            // But we should try to skip "floating" windows if possible, or just get everything.
-            // A safer bet is to get everything that is NOT our app.
-            
-            val root = window.root
-            if (root != null) {
-                collectText(root, nodes)
-            }
-        }
-        return nodes
-    }
-
-    private fun collectText(node: AccessibilityNodeInfo, list: MutableList<TextNode>) {
-        if (node.text != null && node.text.isNotEmpty()) {
-            val rect = Rect()
-            node.getBoundsInScreen(rect)
-            // Filter out tiny or off-screen nodes if needed
-            if (rect.width() > 0 && rect.height() > 0) {
-                list.add(TextNode(node.text.toString(), rect))
-            }
-        }
-        
-        for (i in 0 until node.childCount) {
-            val child = node.getChild(i)
-            if (child != null) {
-                collectText(child, list)
-                child.recycle()
-            }
-        }
-    }
             // Haptic Feedback (Crisp Click) - Moved to performAction, but keeping here specifically for direct calls if any
              // (performAction handles its own vibration)
             
@@ -705,6 +663,43 @@ import com.akslabs.circletosearch.data.TextRepository
                     }
                 }
             )
+        }
+    }
+
+    private fun scrapeScreenText(): List<TextNode> {
+        val nodes = mutableListOf<TextNode>()
+        val windows = windows
+        
+        for (window in windows) {
+            // Skip our own overlay window (type accessibility overlay) to avoid reading our own UI
+            // However, depending on timing, our overlay might not be there yet.
+            // But we should try to skip "floating" windows if possible, or just get everything.
+            // A safer bet is to get everything that is NOT our app.
+            
+            val root = window.root
+            if (root != null) {
+                collectText(root, nodes)
+            }
+        }
+        return nodes
+    }
+
+    private fun collectText(node: AccessibilityNodeInfo, list: MutableList<TextNode>) {
+        if (node.text != null && node.text.isNotEmpty()) {
+            val rect = Rect()
+            node.getBoundsInScreen(rect)
+            // Filter out tiny or off-screen nodes if needed
+            if (rect.width() > 0 && rect.height() > 0) {
+                list.add(TextNode(node.text.toString(), rect))
+            }
+        }
+        
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i)
+            if (child != null) {
+                collectText(child, list)
+                child.recycle()
+            }
         }
     }
 
@@ -754,4 +749,3 @@ import com.akslabs.circletosearch.data.TextRepository
         hideBubble()
     }
 }
-
