@@ -72,7 +72,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
-import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -723,6 +722,110 @@ fun CircleToSearchScreen(
                 }
             }
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+                    .align(Alignment.TopCenter),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onClose,
+                    modifier = Modifier
+                        .background(Color.Gray.copy(alpha = 0.5f), CircleShape)
+                        .size(40.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = selectedEngine.name,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                
+                Box(
+                    modifier = Modifier
+                        .background(Color.Gray.copy(alpha = 0.5f), CircleShape)
+                        .size(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    var showMenu by remember { mutableStateOf(false) }
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
+                    }
+                
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        val isDesktop = isDesktop(selectedEngine)
+                        DropdownMenuItem(
+                            text = { Text(if (isDesktop) "Mobile Mode" else "Desktop Mode") },
+                            leadingIcon = { Icon(if (isDesktop) Icons.Default.Smartphone else Icons.Default.DesktopWindows, null) },
+                            onClick = { 
+                                val newSet = desktopModeEngines.toMutableSet()
+                                if (newSet.contains(selectedEngine)) newSet.remove(selectedEngine) else newSet.add(selectedEngine)
+                                desktopModeEngines = newSet
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(if (isDarkMode) "Light Mode" else "Dark Mode") },
+                            leadingIcon = { Icon(if (isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode, null) },
+                            onClick = { isDarkMode = !isDarkMode; showMenu = false }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(if (showGradientBorder) "Hide Border" else "Show Border") },
+                            leadingIcon = { Icon(Icons.Default.BorderOuter, null) },
+                            onClick = { showGradientBorder = !showGradientBorder; showMenu = false }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Refresh") },
+                            leadingIcon = { Icon(Icons.Default.Refresh, null) },
+                            onClick = { webViews[selectedEngine]?.reload(); showMenu = false }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Copy URL") },
+                            leadingIcon = { Icon(Icons.Default.ContentCopy, null) },
+                            onClick = {
+                                if (searchUrl != null) {
+                                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                    val clip = android.content.ClipData.newPlainText("Search URL", searchUrl)
+                                    clipboard.setPrimaryClip(clip)
+                                }
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Open in Browser") },
+                            leadingIcon = { Icon(Icons.Default.OpenInNew, null) },
+                            onClick = {
+                                val currentUrl = webViews[selectedEngine]?.url ?: searchUrl
+                                if (currentUrl != null) {
+                                    try {
+                                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(currentUrl))
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("CircleToSearch", "Failed to open browser", e)
+                                    }
+                                }
+                                showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Settings") },
+                            leadingIcon = { Icon(Icons.Default.Settings, null) },
+                            onClick = { showSettingsScreen = true; showMenu = false }
+                        )
+                    }
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -756,6 +859,7 @@ fun CircleToSearchScreen(
                                 .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
                         )
                     } else {
+                        // G Logo
                         Row {
                             Text("G", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFF4285F4)))
                             Text("o", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color(0xFFEA4335)))
