@@ -1,21 +1,45 @@
+# IntelliJ / Android Studio
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+*.iws
+*.ipr
+
+# Gradle
+.gradle/
+build/
+/app/build/
+
+# Kotlin
+.kotlin/
+
+# AndroidIDE
+.acside/
+
+# Local configuration
+local.properties
+
+# Mac
 .DS_Store
-/build
-/captures
+
+# Native
 .externalNativeBuild
 .cxx
-local.properties
-C:\Users\ashin\AndroidStudioProjects\CircleToSearch\builderors.md
-# Android build outputs
+
+# Build outputs
+/captures
+/app/release/
 *.apk
 *.aab
 *.dm
-/app/release/
+
+# Keystore files
+*.jks
+*.keystore
+*.pem
+*.p12
+*.key
+
+# Temporary / Snippets
+builderors.md
+SearchMethodSelector.kt.snippet
+GEMINI.md

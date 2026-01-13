@@ -2,105 +2,94 @@
 <div align="center">
   <img src="app/src/main/res/drawable/circletosearch.png" width="200" height="200">
   <h1>Circle To Search</h1>
-  <h3>Circle To Search: Multi-Engine Reverse Image Search</h3>
-  <p>🔒 <em>Google • Bing • Yandex • Tineye</em></p>
+  <h3>Multi-Engine Reverse Image Search for Android</h3>
+  <p>🔒 <em>Google • Bing • Yandex • Tineye • Perplexity • ChatGPT</em></p>
 
 <!-- ---------- Badges ---------- -->
   <div align="center">
-    <!-- <img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square"> -->
-    <!-- <img alt="Downloads" src="https://img.shields.io/github/downloads/AKS-Labs/CircleToSearch/total?color=c3e7ff&style=flat-square"> -->
-    <img alt="Last commit" src="https://img.shields.io/github/last-commit/AKS-Labs/CircleToSearch?color=c3e7ff&style=flat-square">
-    <img alt="Repo size" src="https://img.shields.io/github/repo-size/AKS-Labs/CircleToSearch?color=c3e7ff&style=flat-square">
-    <!-- <img alt="Stars" src="https://img.shields.io/github/stars/AKS-Labs/CircleToSearch?color=c3e7ff&style=flat-square"> -->
-    <br>
-
-
-    
-
-  <img src="https://hits.sh/github.com/AKS-Labs/CircleToSearch.svg?style=for-the-badge&label=Page%20Views&extraCount=360&color=ff3f6f&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJzdmctaWNvbiIgc3R5bGU9IndpZHRoOiAxZW07IGhlaWdodDogMWVtO3ZlcnRpY2FsLWFsaWduOiBtaWRkbGU7ZmlsbDojZmZmZmZmO292ZXJmbG93OiBoaWRkZW47IiB2aWV3Qm94PSIwIDAgMTAyNCAxMDI0IiB2ZXJzaW9uPSIxLjEiPjxwYXRoIGQ9Ik01MTIgMzg0YTEyOCAxMjggMCAwIDAtMTI4IDEyOCAxMjggMTI4IDAgMCAwIDEyOCAxMjggMTI4IDEyOCAwIDAgMCAxMjgtMTI4IDEyOCAxMjggMCAwIDAtMTI4LTEyOG0wIDM0MS4zMzMzMzNhMjEzLjMzMzMzMyAyMTMuMzMzMzMzIDAgMCAxLTIxMy4zMzMzMzMtMjEzLjMzMzMzMyAyMTMuMzMzMzMzIDIxMy4zMzMzMzMgMCAwIDEgMjEzLjMzMzMzMy0yMTMuMzMzMzMzIDIxMy4zMzMzMzMgMjEzLjMzMzMzMyAwIDAgMSAyMTMuMzMzMzMzIDIxMy4zMzMzMzMgMjEzLjMzMzMzMyAyMTMuMzMzMzMzIDAgMCAxLTIxMy4zMzMzMzMgMjEzLjMzMzMzM20wLTUzMy4zMzMzMzNDMjk4LjY2NjY2NyAxOTIgMTE2LjQ4IDMyNC42OTMzMzMgNDIuNjY2NjY3IDUxMmM3My44MTMzMzMgMTg3LjMwNjY2NyAyNTYgMzIwIDQ2OS4zMzMzMzMgMzIwczM5NS41Mi0xMzIuNjkzMzMzIDQ2OS4zMzMzMzMtMzIwYy03My44MTMzMzMtMTg3LjMwNjY2Ny0yNTYtMzIwLTQ2OS4zMzMzMzMtMzIweiIgZmlsbD0iIi8%2BPC9zdmc%2B&labelColor=870b2a"/>
-  
-
-  
-<a href="https://github.com/AKS-Labs/CircleToSearch/releases">
-  
-  <img src="https://img.shields.io/github/downloads/AKS-Labs/CircleToSearch/total?color=ff9500&style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPmRvd25sb2FkPC90aXRsZT48cGF0aCBkPSJNNSwyMEgxOVYxOEg1TTE5LDlIMTVWM0g5VjlINUwxMiwxNkwxOSw5WiIgZmlsbD0id2hpdGUiIC8+PC9zdmc+&labelColor=a6660d"/>
-  
-</a>
-  
-<a href="https://github.com/AKS-Labs/CircleToSearch/stargazers">
-  
-  <img src="https://img.shields.io/github/stars/AKS-Labs/CircleToSearch?color=ffff00&style=for-the-badge&labelColor=a1a116&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRpdGxlPnN0YXI8L3RpdGxlPjxwYXRoIGQ9Ik0xMiwxNy4yN0wxOC4xOCwyMUwxNi41NCwxMy45N0wyMiw5LjI0TDE0LjgxLDguNjJMMTIsMkw5LjE5LDguNjJMMiw5LjI0TDcuNDUsMTMuOTdMNS44MiwyMUwxMiwxNy4yN1oiIGZpbGw9IndoaXRlIiAvPjwvc3ZnPg=="/>
-  
-</a>
-</div>
-
-<!-- ----------   Labels ---------- -->
-<div align="center">
-  <img alt="API" src="https://img.shields.io/badge/Api%2029+-50f270?logo=android&logoColor=black&style=for-the-badge"/>
-  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-a503fc?logo=kotlin&logoColor=white&style=for-the-badge"/>
-  <img alt="Jetpack Compose" src="https://img.shields.io/static/v1?style=for-the-badge&message=Jetpack+Compose&color=4285F4&logo=Jetpack+Compose&logoColor=FFFFFF&label="/>
-  <img alt="material" src="https://custom-icon-badges.demolab.com/badge/material%20you-lightblue?style=for-the-badge&logocolor=333&logo=material-you"/>
-</div>
+    <img alt="API" src="https://img.shields.io/badge/Api%2029+-50f270?logo=android&logoColor=black&style=for-the-badge"/>
+    <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-a503fc?logo=kotlin&logoColor=white&style=for-the-badge"/>
+    <img alt="License" src="https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge"/>
+    <img alt="Jetpack Compose" src="https://img.shields.io/static/v1?style=for-the-badge&message=Jetpack+Compose&color=4285F4&logo=Jetpack+Compose&logoColor=FFFFFF&label="/>
+    <img alt="Material" src="https://custom-icon-badges.demolab.com/badge/material%20you-lightblue?style=for-the-badge&logocolor=333&logo=material-you"/>
+  </div>
 </div>
 
 ---
+
+## ⚖️ License
+
+This project is licensed under the **GNU General Public License v3.0**. 
+
+You are free to use, modify, and distribute this software as long as the same freedoms are preserved for others and proper attribution is given to the original authors. See the [LICENSE](LICENSE) file for the full text.
+
+---
+
+## ⚠️ Attribution & Disclaimer
+
+This project is built upon the open-source work of **[AKS-Labs/CircleToSearch](https://github.com/AKS-Labs/CircleToSearch)**.
+
+> **Note:** This repository is a standalone implementation and is **not forked from or synced with** the original repository. It incorporates significant modifications, optimizations, and new features independently.
+
+---
+
 ## 🎯 What is Circle To Search?
 
-Ever wanted to search for something you see on your phone screen? **Circle To Search** brings that power to your fingertips on *any* Android device. Simply draw a circle around what you're looking for, and instantly get results from your favorite search engine.
-
-Think of it as having Google Lens, Bing Visual Search, Yandex, and TinEye all in one place—and it works everywhere.
-
-
----
-## ✨ Features
-
--   **Universal Compatibility**: Works on any Android device (Android 10+).
--   **Instant Search**: Double-tap the status bar or use the floating bubble to trigger.
--   **Multi-Engine Support**: Search using Google Lens, Bing, Yandex, TinEye.
--   **Set As Default Assistant**: Use As Default Assistant to Search Images Using Circle To Search.
--   **It Can Talk With Humour**: Show Friendly Playful Message Every Time User Uses Circle To Search.
--   **Desktop Mode**: See Results In Desktop Mode.
--   **Dark Mode**: Browse Search Results in Dark Mode.
--   **Copy Url**: Copy Url Of Search Results.
--   **Open In Browser**: Open Search Results In Favourite Browser.
--   **Smart Selection**: Draw a circle, scribble to select.
--   **Beautiful UI**: Modern Material 3 design with dark mode support and smooth animations.
--   **Customizable**: Toggle dark mode, desktop mode, and UI elements like the gradient border.
+**Circle To Search** brings the power of "Circle to Search" to any Android device running Android 10 or newer. Simply trigger the assistant, draw a circle around any object on your screen, and instantly get results from your preferred search engine.
 
 ---
 
-## 🛠️ Built With
+## 🚀 Why This Version? (Key Enhancements)
 
--   **Kotlin** - First-class and official programming language for Android development.
--   **Jetpack Compose** - Android’s modern toolkit for building native UI.
--   **Coroutines** - For asynchronous programming.
--   **Retrofit** - Type-safe HTTP client for Android.
--   **Coil** - Image loading library for Android backed by Kotlin Coroutines.
+While the original project laid the groundwork, this version has been heavily refactored and optimized to provide a **lighter, faster, and more modern experience**.
 
----
+### 💎 Exclusive Improvements:
 
-
-
-## 📥 **Get Circle To Search**
-
-<div align="center">
-    <!-- <p align="center">
-  <a href="https://f-droid.org/packages/com.akslabs.cloudgallery/">
-    <img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-         alt="Get it on F-Droid"
-         height="80">
-  </a> -->
-  <a href="https://github.com/AKS-Labs/CircleToSearch/releases">
-    <img alt="Get it on GitHub" src="https://user-images.githubusercontent.com/69304392/148696068-0cfea65d-b18f-4685-82b5-329a330b1c0d.png" height="80px">
-  </a>
-  <br>
-  <p><strong>• 🔓 Open Source    • 🚀 Ready to Use</strong></p>
-</div>
+*   **Optimized Build Configuration:**
+    *   Updated build configuration with R8 Full Mode, resource shrinking (English-only), and targeted ABI filters (ARM) for a cleaner and more efficient release package.
+*   **Next-Gen Android Support:**
+    *   Updated to target **Android 16 (API 36)** and Android 15, ensuring compatibility with the latest system behaviors and security features.
+*   **Intelligent UI (Contextual Menus):**
+    *   Enhanced `TopControlBar` that understands the search context. It automatically hides browser-only features (Desktop Mode, Refresh, Copy URL) when using Google Lens, providing a cleaner and less confusing interface.
+*   **Stability & Bug Fixes:**
+    *   Fixed critical syntax and compilation errors present in the original codebase that prevented building in environments like AndroidIDE.
+    *   Resolved unresolved references and improved the `SearchEngine` polymorphic architecture for rock-solid stability.
+*   **CI/CD Ready:**
+    *   Includes fully configured GitHub Workflows for automated preview builds and official signed releases.
+*   **Privacy-First:**
+    *   Stripped out all community-specific bloat, redundant links, and tracking for a pure, open-source experience.
 
 ---
 
+## ✨ Key Features
 
-## 📱 **Screenshots**
+-   **Universal Compatibility:** Works on any Android device (Android 10+).
+-   **Multiple Triggers:** Activate via Home Button (Digital Assistant), Quick Settings Tile, or Accessibility Gesture.
+-   **Multi-Engine Support:** Choose from Google Lens, Bing, Yandex, TinEye, Perplexity, and ChatGPT.
+-   **Smart Selection:** Draw a circle or scribble to select areas of interest.
+-   **Desktop Mode:** View search results in desktop layout (for supported engines).
+-   **Dark Mode:** Built-in dark mode for comfortable viewing.
+-   **Material You:** Modern Material 3 design that adapts to your system theme.
+
+---
+
+## 🛠️ Tech Stack
+
+-   **Kotlin**: 100% Kotlin codebase.
+-   **Jetpack Compose**: Modern UI toolkit.
+-   **Coroutines**: Asynchronous tasks.
+-   **Retrofit & OkHttp**: Networking.
+-   **Coil**: Image loading.
+
+---
+
+## 📥 Download
+
+Get the latest optimized APK from the **[Releases Page](../../releases)**.
+
+---
+
+## 📱 Screenshots
 
 <table align="center">
   <tr>
@@ -109,36 +98,10 @@ Think of it as having Google Lens, Bing Visual Search, Yandex, and TinEye all in
     <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="200"/></td>
     <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="200"/></td>
   </tr>
-  <tr>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.png" width="200"/></td>
-    <td><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/8.png" width="200"/></td>
-  </tr>
 </table>
 
 ---
 
-## 🤝 **Community**
-
-- 🐛 **Bug reports:** [GitHub Issues](https://github.com/AKS-Labs/CircleToSearch/issues)
-- 💡 **Feature requests:** [GitHub Issues](https://github.com/AKS-Labs/CircleToSearch/issues)
-- 👨‍💻 **Contribute:** Fork and submit pull requests
-- ⭐ Star the repo
-* 💬 Join the [AKS-Labs Telegram group](https://t.me/AKSLabs)
-* ☕ Maybe [**Donate**](https://github.com/sponsors/AKS-Labs), if you can.
-
----
-
-
-
-## 🙏 Acknowledgments
-
--   Inspired by Google's Circle to Search feature.
--   Icons by [Material Design Icons](https://fonts.google.com/icons).
-
----
-
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/akslabs">AKSLabs</a>
+  Original concept by Google. Base code by <a href="https://github.com/AKS-Labs">AKS-Labs</a>.
 </p>
