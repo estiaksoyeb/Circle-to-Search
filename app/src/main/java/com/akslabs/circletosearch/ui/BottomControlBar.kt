@@ -86,33 +86,39 @@ fun BottomControlBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Select Text Button
-            IconButton(
-                onClick = onToggleTextSelection,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(androidx.compose.ui.graphics.Brush.linearGradient(com.akslabs.circletosearch.ui.theme.OverlayGradientColors))
-            ) {
-                Icon(
-                    imageVector = Icons.Default.TextFormat,
-                    contentDescription = "Select Text",
-                    tint = if (isTextSelectionMode) Color.Black else Color.White
+            Box(contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(androidx.compose.ui.graphics.Brush.linearGradient(com.akslabs.circletosearch.ui.theme.OverlayGradientColors.map { it.copy(alpha = 0.7f) }))
                 )
+                IconButton(onClick = onToggleTextSelection) {
+                    Icon(
+                        imageVector = Icons.Default.TextFormat,
+                        contentDescription = "Select Text",
+                        tint = if (isTextSelectionMode) Color.Black else Color.White
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.width(8.dp))
 
             // Google Lens Button (Full Screenshot)
-            IconButton(
-                onClick = onGoogleLensClick,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(androidx.compose.ui.graphics.Brush.linearGradient(com.akslabs.circletosearch.ui.theme.OverlayGradientColors))
-            ) {
-                Icon(
-                    imageVector = Icons.Default.CameraAlt,
-                    contentDescription = "Google Lens",
-                    tint = Color.White
+            Box(contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(androidx.compose.ui.graphics.Brush.linearGradient(com.akslabs.circletosearch.ui.theme.OverlayGradientColors.map { it.copy(alpha = 0.7f) }))
                 )
+                IconButton(onClick = onGoogleLensClick) {
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = "Google Lens",
+                        tint = Color.White
+                    )
+                }
             }
         }
     }
