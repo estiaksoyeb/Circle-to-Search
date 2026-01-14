@@ -3,9 +3,9 @@
 # proguardFiles setting in build.gradle.
 
 # Keep Compose-specific classes
--keep class androidx.compose.** { *; }
--keep interface androidx.compose.** { *; }
--dontwarn androidx.compose.**
+# -keep class androidx.compose.** { *; }
+# -keep interface androidx.compose.** { *; }
+# -dontwarn androidx.compose.**
 
 # Keep WebView JavaScript interfaces
 -keepclassmembers class * {
