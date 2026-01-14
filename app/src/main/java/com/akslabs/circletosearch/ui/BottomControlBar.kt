@@ -86,18 +86,28 @@ fun BottomControlBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Select Text Button
-            IconButton(onClick = onToggleTextSelection) {
+            IconButton(
+                onClick = onToggleTextSelection,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(androidx.compose.ui.graphics.Brush.linearGradient(com.akslabs.circletosearch.ui.theme.OverlayGradientColors))
+            ) {
                 Icon(
                     imageVector = Icons.Default.TextFormat,
                     contentDescription = "Select Text",
-                    tint = if (isTextSelectionMode) MaterialTheme.colorScheme.primary else Color.White
+                    tint = if (isTextSelectionMode) Color.Black else Color.White
                 )
             }
             
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             // Google Lens Button (Full Screenshot)
-            IconButton(onClick = onGoogleLensClick) {
+            IconButton(
+                onClick = onGoogleLensClick,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(androidx.compose.ui.graphics.Brush.linearGradient(com.akslabs.circletosearch.ui.theme.OverlayGradientColors))
+            ) {
                 Icon(
                     imageVector = Icons.Default.CameraAlt,
                     contentDescription = "Google Lens",
